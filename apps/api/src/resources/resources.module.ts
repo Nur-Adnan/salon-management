@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ResourceRepository } from './resource.repository';
-import { Resource, ResourceSchema } from './resource.schema';
-import { ResourcesController } from './resources.controller';
+import { ResourceRepository } from './resource.repository.js';
+import { Resource, ResourceSchema } from './resource.schema.js';
+import { ResourcesController } from './resources.controller.js';
 
 @Module({
   imports: [MongooseModule.forFeature([{ name: Resource.name, schema: ResourceSchema }])],

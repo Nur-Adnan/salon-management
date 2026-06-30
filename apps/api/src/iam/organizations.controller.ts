@@ -1,9 +1,9 @@
 import { Body, Controller, ForbiddenException, Post } from '@nestjs/common';
 import { type CreateOrganization, createOrganizationSchema } from '@salon/shared';
-import type { RequestContext } from '../common/context/request-context.service';
-import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { CurrentUser } from './auth/current-user.decorator';
-import { OrganizationsService } from './services/organizations.service';
+import type { RequestContext } from '../common/context/request-context.service.js';
+import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe.js';
+import { CurrentUser } from './auth/current-user.decorator.js';
+import { OrganizationsService } from './services/organizations.service.js';
 
 @Controller('organizations')
 export class OrganizationsController {

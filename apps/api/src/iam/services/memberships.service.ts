@@ -2,9 +2,9 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { InviteMember } from '@salon/shared';
 import { type Model, Types } from 'mongoose';
-import { RequestContextService } from '../../common/context/request-context.service';
-import { Membership, type MembershipDocument } from '../schemas/membership.schema';
-import { User, type UserDocument } from '../schemas/user.schema';
+import { RequestContextService } from '../../common/context/request-context.service.js';
+import { Membership, type MembershipDocument } from '../schemas/membership.schema.js';
+import { User, type UserDocument } from '../schemas/user.schema.js';
 
 @Injectable()
 export class MembershipsService {

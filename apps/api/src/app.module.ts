@@ -6,19 +6,20 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { randomUUID } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { LoggerModule } from 'nestjs-pino';
-import { AuditModule } from './audit/audit.module';
-import { ContextMiddleware } from './common/context/context.middleware';
-import { CoreModule } from './common/core.module';
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-import { type Env, validateEnv } from './config/env';
-import { AbilitiesGuard } from './iam/casl/abilities.guard';
-import { JwtAuthGuard } from './iam/auth/jwt-auth.guard';
-import { IamModule } from './iam/iam.module';
-import { HealthModule } from './health/health.module';
-import { PingModule } from './ping/ping.module';
-import { QueueModule } from './queue/queue.module';
-import { ResourcesModule } from './resources/resources.module';
-import { RedisModule } from './infra/redis/redis.module';
+import { AuditModule } from './audit/audit.module.js';
+import { CatalogModule } from './catalog/catalog.module.js';
+import { ContextMiddleware } from './common/context/context.middleware.js';
+import { CoreModule } from './common/core.module.js';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
+import { type Env, validateEnv } from './config/env.js';
+import { AbilitiesGuard } from './iam/casl/abilities.guard.js';
+import { JwtAuthGuard } from './iam/auth/jwt-auth.guard.js';
+import { IamModule } from './iam/iam.module.js';
+import { HealthModule } from './health/health.module.js';
+import { PingModule } from './ping/ping.module.js';
+import { QueueModule } from './queue/queue.module.js';
+import { ResourcesModule } from './resources/resources.module.js';
+import { RedisModule } from './infra/redis/redis.module.js';
 
 @Module({
   imports: [
@@ -61,6 +62,7 @@ import { RedisModule } from './infra/redis/redis.module';
     AuditModule,
     IamModule,
     ResourcesModule,
+    CatalogModule,
     HealthModule,
     PingModule,
   ],

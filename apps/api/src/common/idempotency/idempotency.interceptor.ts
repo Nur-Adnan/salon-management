@@ -8,7 +8,7 @@ import {
 import type { Request } from 'express';
 import type { Redis } from 'ioredis';
 import { type Observable, catchError, from, of, switchMap, tap } from 'rxjs';
-import { REDIS } from '../../infra/redis/redis.module';
+import { REDIS } from '../../infra/redis/redis.module.js';
 
 // Replays the stored response for a repeated (tenant, Idempotency-Key). Applied to
 // mutating routes that create money/inventory/appointment effects. Degrades to

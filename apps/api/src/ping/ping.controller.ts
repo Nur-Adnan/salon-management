@@ -5,11 +5,11 @@ import { type PingRequest, type PingResponse, pingRequestSchema } from '@salon/s
 import { Queue } from 'bullmq';
 import type { Request } from 'express';
 import { PinoLogger } from 'nestjs-pino';
-import { IdempotencyInterceptor } from '../common/idempotency/idempotency.interceptor';
-import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { PingedEvent } from '../events/pinged.event';
-import { Public } from '../iam/auth/public.decorator';
-import { SAMPLE_QUEUE } from '../queue/queue.constants';
+import { IdempotencyInterceptor } from '../common/idempotency/idempotency.interceptor.js';
+import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe.js';
+import { PingedEvent } from '../events/pinged.event.js';
+import { Public } from '../iam/auth/public.decorator.js';
+import { SAMPLE_QUEUE } from '../queue/queue.constants.js';
 
 // Phase-0 end-to-end probe: validates (shared Zod) -> emits a domain event
 // (audit subscribes) -> best-effort enqueue -> returns the correlation id.

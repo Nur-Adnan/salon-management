@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateEnv } from './env';
+import { validateEnv } from './env.js';
 
 describe('validateEnv', () => {
   it('applies localhost defaults when infra URLs are absent', () => {

@@ -1,6 +1,6 @@
 import { Logger } from '@nestjs/common';
 import { EventsHandler, type IEventHandler } from '@nestjs/cqrs';
-import { PingedEvent } from '../events/pinged.event';
+import { PingedEvent } from '../events/pinged.event.js';
 
 // Demonstrates the audit pattern: every state-changing command emits an event,
 // the audit module consumes it. Phase 1 replaces the log with an immutable Mongo write.

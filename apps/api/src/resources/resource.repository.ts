@@ -1,9 +1,9 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { type FilterQuery, type Model, Types } from 'mongoose';
-import { RequestContextService } from '../common/context/request-context.service';
-import { TenantScopedRepository } from '../common/tenant-scoped.repository';
-import { Resource, type ResourceDocument } from './resource.schema';
+import { type Model, Types } from 'mongoose';
+import { RequestContextService } from '../common/context/request-context.service.js';
+import { type RepoFilter, TenantScopedRepository } from '../common/tenant-scoped.repository.js';
+import { Resource, type ResourceDocument } from './resource.schema.js';
 
 // Resources are tenant AND branch scoped: every op also requires an active branch,
 // so a branch-A member can never touch branch-B resources even within the same tenant.
@@ -22,9 +22,7 @@ export class ResourceRepository extends TenantScopedRepository<ResourceDocument>
     return new Types.ObjectId(b);
   }
 
-  protected override scoped(
-    filter: FilterQuery<ResourceDocument> = {},
-  ): FilterQuery<ResourceDocument> {
+  protected override scoped(filter: RepoFilter = {}): RepoFilter {
     return { ...super.scoped(filter), branchId: this.branchId };
   }
 

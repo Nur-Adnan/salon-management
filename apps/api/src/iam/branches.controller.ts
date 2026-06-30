@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { type CreateBranch, createBranchSchema } from '@salon/shared';
-import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { CheckAbility } from './casl/check-ability.decorator';
-import { serializeBranch } from './mappers';
-import { BranchRepository } from './services/branch.repository';
+import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe.js';
+import { CheckAbility } from './casl/check-ability.decorator.js';
+import { serializeBranch } from './mappers.js';
+import { BranchRepository } from './services/branch.repository.js';
 
 @Controller('branches')
 export class BranchesController {

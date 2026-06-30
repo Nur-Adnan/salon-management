@@ -32,6 +32,9 @@ export type ResourceType = (typeof RESOURCE_TYPES)[number];
 export const MEMBERSHIP_STATUS = ['invited', 'active', 'disabled'] as const;
 export type MembershipStatus = (typeof MEMBERSHIP_STATUS)[number];
 
+export const PACKAGE_ITEM_KINDS = ['service', 'product'] as const;
+export type PackageItemKind = (typeof PACKAGE_ITEM_KINDS)[number];
+
 // CASL vocabulary, shared so the frontend can reason about permissions too.
 export const ACTIONS = ['manage', 'create', 'read', 'update', 'delete', 'invite'] as const;
 export type Action = (typeof ACTIONS)[number];
@@ -42,6 +45,7 @@ export const SUBJECTS = [
   'User',
   'Membership',
   'Resource',
+  'Catalog',
   'all',
 ] as const;
 export type Subject = (typeof SUBJECTS)[number];

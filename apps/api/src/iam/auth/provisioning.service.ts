@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Model } from 'mongoose';
-import type { MembershipView } from '../../common/context/request-context.service';
-import { Membership, type MembershipDocument } from '../schemas/membership.schema';
-import { User, type UserDocument } from '../schemas/user.schema';
-import type { SupabaseJwtPayload } from './supabase-jwt.strategy';
+import type { MembershipView } from '../../common/context/request-context.service.js';
+import { Membership, type MembershipDocument } from '../schemas/membership.schema.js';
+import { User, type UserDocument } from '../schemas/user.schema.js';
+import type { SupabaseJwtPayload } from './supabase-jwt.strategy.js';
 
 @Injectable()
 export class ProvisioningService {
@@ -23,7 +23,9 @@ export class ProvisioningService {
     const user = await this.users
       .findOneAndUpdate(
         { supabaseUserId: payload.sub },
-        { $setOnInsert: { supabaseUserId: payload.sub, email }, $set: { email } },
+        // $set covers both insert and update; keep email out of $setOnInsert to
+        // avoid a conflicting-operators error on the same path.
+        { $setOnInsert: { supabaseUserId: payload.sub }, $set: { email } },
         { new: true, upsert: true, setDefaultsOnInsert: true },
       )
       .exec();

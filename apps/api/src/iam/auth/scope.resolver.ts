@@ -1,5 +1,5 @@
 import { ForbiddenException } from '@nestjs/common';
-import type { MembershipView, RequestContext } from '../../common/context/request-context.service';
+import type { MembershipView, RequestContext } from '../../common/context/request-context.service.js';
 
 type ResolvedScope = Pick<RequestContext, 'tenantId' | 'branchId' | 'role'>;
 

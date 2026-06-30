@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { PassportStrategy } from '@nestjs/passport';
 import { passportJwtSecret } from 'jwks-rsa';
 import { ExtractJwt, Strategy, type StrategyOptions } from 'passport-jwt';
-import type { Env } from '../../config/env';
+import type { Env } from '../../config/env.js';
 
 export interface SupabaseJwtPayload {
   sub: string;
@@ -35,7 +35,8 @@ function buildOptions(config: ConfigService<Env, true>): StrategyOptions {
 @Injectable()
 export class SupabaseJwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   constructor(config: ConfigService<Env, true>) {
-    super(buildOptions(config));
+    // We never set passReqToCallback, so this is the "without request" variant.
+    super(buildOptions(config) as StrategyOptions & { passReqToCallback?: false });
   }
 
   validate(payload: SupabaseJwtPayload): SupabaseJwtPayload {

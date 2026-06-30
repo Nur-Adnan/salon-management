@@ -2,8 +2,8 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { CreateOrganization } from '@salon/shared';
 import { type Model, Types } from 'mongoose';
-import { Membership, type MembershipDocument } from '../schemas/membership.schema';
-import { Organization, type OrganizationDocument } from '../schemas/organization.schema';
+import { Membership, type MembershipDocument } from '../schemas/membership.schema.js';
+import { Organization, type OrganizationDocument } from '../schemas/organization.schema.js';
 
 @Injectable()
 export class OrganizationsService {

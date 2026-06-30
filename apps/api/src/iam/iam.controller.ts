@@ -1,6 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
-import type { RequestContext } from '../common/context/request-context.service';
-import { CurrentUser } from './auth/current-user.decorator';
+import type { RequestContext } from '../common/context/request-context.service.js';
+import { CurrentUser } from './auth/current-user.decorator.js';
 
 @Controller()
 export class IamController {

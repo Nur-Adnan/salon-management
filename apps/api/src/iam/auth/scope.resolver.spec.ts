@@ -1,7 +1,7 @@
 import type { Role } from '@salon/shared';
 import { describe, expect, it } from 'vitest';
-import type { MembershipView } from '../../common/context/request-context.service';
-import { resolveScope } from './scope.resolver';
+import type { MembershipView } from '../../common/context/request-context.service.js';
+import { resolveScope } from './scope.resolver.js';
 
 const m = (tenantId: string, branchId: string | null, role: Role): MembershipView => ({
   tenantId,

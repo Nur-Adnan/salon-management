@@ -12,7 +12,7 @@ export class Branch {
   @Prop({ required: true, default: 'Asia/Dhaka' })
   timezone!: string;
 
-  @Prop({ trim: true })
+  @Prop({ type: String, trim: true })
   address?: string;
 
   @Prop({ required: true, default: 'active', enum: ['active', 'inactive'] })

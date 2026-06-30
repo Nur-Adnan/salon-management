@@ -1,8 +1,15 @@
 # Salon & Spa Platform
 
 Multi-tenant Salon & Spa ERP/POS/CRM/Appointments. NestJS modular monolith + two
-Next.js App Router apps, MongoDB, Redis, Turborepo. This repo currently contains
-**Phase 0 — Foundation** (see the master blueprint and `docs/phase-0.md`).
+Next.js App Router apps, MongoDB, Redis, Turborepo. Built phases:
+**Phase 0 — Foundation** (`docs/phase-0.md`),
+**Phase 1 — Identity, Access, Tenancy** (`docs/phase-1.md`), and
+**Phase 2 — Service & Product Catalog** (`docs/phase-2.md`).
+
+Auth uses Supabase as the identity provider only; the admin app needs
+`NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` to run a live login.
+The API verifies the Supabase JWT and enforces all tenant scoping + CASL authz
+itself (no RLS). See `.env.example`.
 
 ## Layout
 

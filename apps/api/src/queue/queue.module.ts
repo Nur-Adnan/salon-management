@@ -2,8 +2,8 @@ import { BullModule, InjectQueue } from '@nestjs/bullmq';
 import { Global, Logger, Module, type OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Queue } from 'bullmq';
-import { SAMPLE_QUEUE, redisConnectionFromUrl } from './queue.constants';
-import { SampleProcessor } from './sample.processor';
+import { SAMPLE_QUEUE, redisConnectionFromUrl } from './queue.constants.js';
+import { SampleProcessor } from './sample.processor.js';
 
 @Global()
 @Module({

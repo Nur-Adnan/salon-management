@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { HealthIndicatorService, type HealthIndicatorResult } from '@nestjs/terminus';
 import type { Redis } from 'ioredis';
-import { REDIS } from '../infra/redis/redis.module';
+import { REDIS } from '../infra/redis/redis.module.js';
 
 // Custom Terminus indicator (v11 HealthIndicatorService API).
 @Injectable()

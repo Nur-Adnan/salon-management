@@ -5,11 +5,11 @@ import type { Request } from 'express';
 import {
   type RequestContext,
   RequestContextService,
-} from '../../common/context/request-context.service';
-import { ProvisioningService } from './provisioning.service';
-import { IS_PUBLIC } from './public.decorator';
-import { resolveScope } from './scope.resolver';
-import type { SupabaseJwtPayload } from './supabase-jwt.strategy';
+} from '../../common/context/request-context.service.js';
+import { ProvisioningService } from './provisioning.service.js';
+import { IS_PUBLIC } from './public.decorator.js';
+import { resolveScope } from './scope.resolver.js';
+import type { SupabaseJwtPayload } from './supabase-jwt.strategy.js';
 
 // Global guard: validates the Supabase JWT, provisions the user, resolves the
 // active tenant/branch from headers (against memberships), and populates the
@@ -24,7 +24,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     super();
   }
 
-  async canActivate(context: ExecutionContext): Promise<boolean> {
+  override async canActivate(context: ExecutionContext): Promise<boolean> {
     const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC, [
       context.getHandler(),
       context.getClass(),
@@ -53,7 +53,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     return true;
   }
 
-  handleRequest<T = SupabaseJwtPayload>(err: unknown, user: T): T {
+  override handleRequest<T = SupabaseJwtPayload>(err: unknown, user: T): T {
     if (err || !user) throw err instanceof Error ? err : new UnauthorizedException();
     return user;
   }

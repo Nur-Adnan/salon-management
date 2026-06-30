@@ -1,7 +1,7 @@
 import { AbilityBuilder, type MongoAbility, createMongoAbility } from '@casl/ability';
 import { Injectable } from '@nestjs/common';
 import type { Action, Role, Subject } from '@salon/shared';
-import { RequestContextService } from '../../common/context/request-context.service';
+import { RequestContextService } from '../../common/context/request-context.service.js';
 
 export type AppAbility = MongoAbility<[Action, Subject]>;
 
@@ -19,6 +19,7 @@ export function abilityForRole(role: Role | undefined, hasTenant: boolean): AppA
         can('read', 'Organization');
         can('manage', 'Branch');
         can('manage', 'Resource');
+        can('manage', 'Catalog');
         can('manage', 'Membership'); // invite/manage staff
         can('read', 'User');
         break;
@@ -29,11 +30,13 @@ export function abilityForRole(role: Role | undefined, hasTenant: boolean): AppA
         can('read', 'Organization');
         can('read', 'Branch');
         can('read', 'Resource');
+        can('read', 'Catalog');
         can('read', 'User');
         break;
       case 'stylist':
         can('read', 'Branch');
         can('read', 'Resource');
+        can('read', 'Catalog');
         break;
       case 'read_only':
         can('read', 'all');

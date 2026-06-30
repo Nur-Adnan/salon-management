@@ -5,8 +5,8 @@ import {
   Injectable,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { AbilityFactory } from './ability.factory';
-import { CHECK_ABILITY, type RequiredRule } from './check-ability.decorator';
+import { AbilityFactory } from './ability.factory.js';
+import { CHECK_ABILITY, type RequiredRule } from './check-ability.decorator.js';
 
 // Global authz guard. Runs after JwtAuthGuard (which populates the context), so
 // the ability reflects the user's role in the active tenant/branch.

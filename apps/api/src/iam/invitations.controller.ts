@@ -1,9 +1,9 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { type InviteMember, inviteMemberSchema } from '@salon/shared';
-import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { CheckAbility } from './casl/check-ability.decorator';
-import { serializeMembership } from './mappers';
-import { MembershipsService } from './services/memberships.service';
+import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe.js';
+import { CheckAbility } from './casl/check-ability.decorator.js';
+import { serializeMembership } from './mappers.js';
+import { MembershipsService } from './services/memberships.service.js';
 
 @Controller('invitations')
 export class InvitationsController {

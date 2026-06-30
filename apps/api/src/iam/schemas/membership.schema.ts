@@ -12,16 +12,16 @@ export class Membership {
   @Prop({ type: Types.ObjectId, default: null, index: true })
   userId!: Types.ObjectId | null;
 
-  @Prop({ lowercase: true, trim: true, default: null })
+  @Prop({ type: String, lowercase: true, trim: true, default: null })
   invitedEmail!: string | null;
 
   @Prop({ type: Types.ObjectId, default: null })
   branchId!: Types.ObjectId | null;
 
-  @Prop({ required: true, enum: [...ROLES] })
+  @Prop({ type: String, required: true, enum: [...ROLES] })
   role!: Role;
 
-  @Prop({ required: true, default: 'active', enum: [...MEMBERSHIP_STATUS] })
+  @Prop({ type: String, required: true, default: 'active', enum: [...MEMBERSHIP_STATUS] })
   status!: MembershipStatus;
 }
 

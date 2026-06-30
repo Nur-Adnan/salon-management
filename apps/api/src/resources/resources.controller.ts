@@ -15,10 +15,10 @@ import {
   objectIdSchema,
   updateResourceSchema,
 } from '@salon/shared';
-import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
-import { CheckAbility } from '../iam/casl/check-ability.decorator';
-import { ResourceRepository } from './resource.repository';
-import type { ResourceDocument } from './resource.schema';
+import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe.js';
+import { CheckAbility } from '../iam/casl/check-ability.decorator.js';
+import { ResourceRepository } from './resource.repository.js';
+import type { ResourceDocument } from './resource.schema.js';
 
 function serialize(r: ResourceDocument) {
   return {

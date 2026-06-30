@@ -1,5 +1,5 @@
 import { type ExecutionContext, createParamDecorator } from '@nestjs/common';
-import type { RequestContext } from '../../common/context/request-context.service';
+import type { RequestContext } from '../../common/context/request-context.service.js';
 
 // Returns the resolved identity + active scope (attached by JwtAuthGuard).
 export const CurrentUser = createParamDecorator(

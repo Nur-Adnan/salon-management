@@ -1,10 +1,11 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "moduleResolution": "node10",
-    // node10 still works in TS 6 (Nest is CommonJS); silence the 7.0 deprecation-as-error.
-    "ignoreDeprecations": "6.0",
+    // NodeNext: honors package "exports" type maps (CASL, modern deps) and emits
+    // CommonJS because this package is CJS (no "type":"module"). Relative imports
+    // carry .js extensions accordingly.
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
     "target": "ES2023",
     "lib": ["ES2023"],
     "types": ["node"],
@@ -16,5 +17,5 @@
     "rootDir": "src"
   },
   "include": ["src"],
-  "exclude": ["dist", "node_modules", "**/*.test.ts"]
+  "exclude": ["dist", "node_modules", "**/*.test.ts", "**/*.spec.ts"]
 }

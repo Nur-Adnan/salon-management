@@ -1,11 +1,12 @@
 {
-  "home": {
-    "title": "Salon Admin",
-    "subtitle": "Phase 0 foundation"
-  },
-  "ping": {
-    "heading": "Ping the API",
-    "namePlaceholder": "Your name",
-    "submit": "Send ping"
+  "auth": {
+    "signIn": "Sign in",
+    "signUp": "Sign up",
+    "email": "Email",
+    "password": "Password",
+    "magicLink": "Magic link",
+    "google": "Continue with Google",
+    "checkEmail": "Check your email to confirm your account.",
+    "magicSent": "Magic link sent — check your email."
   }
 }

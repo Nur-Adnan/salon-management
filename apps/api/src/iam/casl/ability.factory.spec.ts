@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { abilityForRole } from './ability.factory';
+import { abilityForRole } from './ability.factory.js';
 
 describe('abilityForRole', () => {
   it('owner can manage everything in the tenant', () => {
@@ -9,16 +9,19 @@ describe('abilityForRole', () => {
     expect(a.can('manage', 'Membership')).toBe(true);
   });
 
-  it('stylist can read but not create resources, cannot read memberships', () => {
+  it('stylist can read but not create resources/catalog, cannot read memberships', () => {
     const a = abilityForRole('stylist', true);
     expect(a.can('read', 'Resource')).toBe(true);
     expect(a.can('create', 'Resource')).toBe(false);
+    expect(a.can('read', 'Catalog')).toBe(true);
+    expect(a.can('create', 'Catalog')).toBe(false);
     expect(a.can('read', 'Membership')).toBe(false);
   });
 
-  it('manager manages resources + invites, reads but cannot mutate the org', () => {
+  it('manager manages resources + catalog + invites, reads but cannot mutate the org', () => {
     const a = abilityForRole('manager', true);
     expect(a.can('create', 'Resource')).toBe(true);
+    expect(a.can('manage', 'Catalog')).toBe(true);
     expect(a.can('create', 'Membership')).toBe(true);
     expect(a.can('read', 'Organization')).toBe(true);
     expect(a.can('update', 'Organization')).toBe(false);

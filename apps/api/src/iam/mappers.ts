@@ -1,5 +1,5 @@
-import type { BranchDocument } from './schemas/branch.schema';
-import type { MembershipDocument } from './schemas/membership.schema';
+import type { BranchDocument } from './schemas/branch.schema.js';
+import type { MembershipDocument } from './schemas/membership.schema.js';
 
 export const serializeBranch = (b: BranchDocument) => ({
   id: String(b._id),

@@ -1,6 +1,10 @@
 import { ForbiddenException } from '@nestjs/common';
-import { type FilterQuery, type Model, Types, type UpdateQuery } from 'mongoose';
-import { RequestContextService } from './context/request-context.service';
+import { type Model, Types, type UpdateQuery } from 'mongoose';
+import { RequestContextService } from './context/request-context.service.js';
+
+// mongoose 9 dropped the exported FilterQuery type; filters here are plain objects
+// and cast only at the mongoose call boundary (mongoose accepts plain filters).
+export type RepoFilter = Record<string, unknown>;
 
 // Base for every tenant-owned collection. EVERY read/write is scoped to the
 // active tenant from the request context. A query that escapes its tenant is a
@@ -18,38 +22,36 @@ export abstract class TenantScopedRepository<T> {
   }
 
   /** Force tenant + not-deleted onto every filter. */
-  protected scoped(filter: FilterQuery<T> = {}): FilterQuery<T> {
-    return { ...filter, tenantId: this.tenantId, deletedAt: null } as FilterQuery<T>;
+  protected scoped(filter: RepoFilter = {}): RepoFilter {
+    return { ...filter, tenantId: this.tenantId, deletedAt: null };
   }
 
   create(data: Partial<T>): Promise<T> {
     return this.model.create({ ...data, tenantId: this.tenantId } as Partial<T>) as Promise<T>;
   }
 
-  find(filter: FilterQuery<T> = {}): Promise<T[]> {
-    return this.model.find(this.scoped(filter)).exec();
+  find(filter: RepoFilter = {}): Promise<T[]> {
+    return this.model.find(this.scoped(filter) as never).exec();
   }
 
   findById(id: string): Promise<T | null> {
-    return this.model.findOne(this.scoped({ _id: new Types.ObjectId(id) } as FilterQuery<T>)).exec();
+    return this.model.findOne(this.scoped({ _id: new Types.ObjectId(id) }) as never).exec();
   }
 
-  findOne(filter: FilterQuery<T>): Promise<T | null> {
-    return this.model.findOne(this.scoped(filter)).exec();
+  findOne(filter: RepoFilter): Promise<T | null> {
+    return this.model.findOne(this.scoped(filter) as never).exec();
   }
 
   updateById(id: string, patch: UpdateQuery<T>): Promise<T | null> {
     return this.model
-      .findOneAndUpdate(this.scoped({ _id: new Types.ObjectId(id) } as FilterQuery<T>), patch, {
-        new: true,
-      })
+      .findOneAndUpdate(this.scoped({ _id: new Types.ObjectId(id) }) as never, patch, { new: true })
       .exec();
   }
 
   softDeleteById(id: string): Promise<T | null> {
     return this.model
       .findOneAndUpdate(
-        this.scoped({ _id: new Types.ObjectId(id) } as FilterQuery<T>),
+        this.scoped({ _id: new Types.ObjectId(id) }) as never,
         { deletedAt: new Date() } as UpdateQuery<T>,
         { new: true },
       )

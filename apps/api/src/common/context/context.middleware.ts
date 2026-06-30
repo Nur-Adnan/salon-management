@@ -1,6 +1,6 @@
 import { Injectable, type NestMiddleware } from '@nestjs/common';
 import type { NextFunction, Request, Response } from 'express';
-import { RequestContextService } from './request-context.service';
+import { RequestContextService } from './request-context.service.js';
 
 // Establishes a fresh AsyncLocalStorage store for the whole request; the auth
 // guard fills it in. Runs before guards, so the store exists by the time they do.

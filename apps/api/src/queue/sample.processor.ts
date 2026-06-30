@@ -1,7 +1,7 @@
 import { Processor, WorkerHost } from '@nestjs/bullmq';
 import { Logger, type OnApplicationBootstrap } from '@nestjs/common';
 import type { Job } from 'bullmq';
-import { SAMPLE_QUEUE } from './queue.constants';
+import { SAMPLE_QUEUE } from './queue.constants.js';
 
 // Proves the BullMQ wiring end-to-end. Real processors (reminders, campaigns,
 // reports, image processing) arrive in later phases.

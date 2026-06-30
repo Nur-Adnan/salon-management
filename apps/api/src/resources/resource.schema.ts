@@ -13,7 +13,7 @@ export class Resource {
   @Prop({ required: true, trim: true })
   name!: string;
 
-  @Prop({ required: true, enum: [...RESOURCE_TYPES] })
+  @Prop({ type: String, required: true, enum: [...RESOURCE_TYPES] })
   type!: ResourceType;
 
   @Prop({ required: true, default: 1 })
