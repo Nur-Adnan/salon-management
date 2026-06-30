@@ -1,0 +1,11 @@
+{
+  "home": {
+    "title": "Salon Admin",
+    "subtitle": "Phase 0 foundation"
+  },
+  "ping": {
+    "heading": "Ping the API",
+    "namePlaceholder": "Your name",
+    "submit": "Send ping"
+  }
+}

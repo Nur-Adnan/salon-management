@@ -1,0 +1,28 @@
+# deps
+node_modules/
+.pnpm-store/
+
+# build output
+dist/
+.next/
+out/
+.turbo/
+*.tsbuildinfo
+
+# test / coverage
+coverage/
+
+# env / secrets (NEVER commit) - see .env.example
+.env
+.env.*
+!.env.example
+
+# logs
+*.log
+npm-debug.log*
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json

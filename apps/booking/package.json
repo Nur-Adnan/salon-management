@@ -1,0 +1,31 @@
+{
+  "name": "@salon/booking",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev -p 3001",
+    "build": "next build",
+    "start": "next start -p 3001",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@heroui/styles": "3.2.1",
+    "@salon/shared": "workspace:*",
+    "@salon/ui": "workspace:*",
+    "next": "16.2.9",
+    "next-intl": "4.13.1",
+    "react": "19.2.7",
+    "react-dom": "19.2.7"
+  },
+  "devDependencies": {
+    "@salon/config": "workspace:*",
+    "@tailwindcss/postcss": "4.3.2",
+    "@types/node": "26.0.1",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "tailwindcss": "4.3.2",
+    "typescript": "6.0.3"
+  }
+}

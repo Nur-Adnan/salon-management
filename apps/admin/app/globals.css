@@ -1,0 +1,6 @@
+@import 'tailwindcss';
+@import '@heroui/styles';
+@import '@salon/ui/styles.css';
+
+/* next-themes toggles the `dark` class; make Tailwind `dark:` utilities follow it. */
+@custom-variant dark (&:where(.dark, .dark *));

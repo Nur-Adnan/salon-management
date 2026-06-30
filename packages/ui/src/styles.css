@@ -1,0 +1,21 @@
+/* Design tokens shared by both web apps. Imported AFTER `@import "tailwindcss"`
+   and `@import "@heroui/styles"` in each app's globals.css.
+   ponytail: one brand color for now; grow the token set when the design system does. */
+
+:root,
+[data-theme='light'] {
+  --brand: oklch(0.62 0.17 25);
+  --brand-foreground: oklch(0.98 0 0);
+}
+
+.dark,
+[data-theme='dark'] {
+  --brand: oklch(0.68 0.15 25);
+  --brand-foreground: oklch(0.15 0 0);
+}
+
+/* Expose tokens to Tailwind v4 utilities (text-brand, bg-brand, ...). */
+@theme inline {
+  --color-brand: var(--brand);
+  --color-brand-foreground: var(--brand-foreground);
+}

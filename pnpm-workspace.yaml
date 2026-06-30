@@ -1,0 +1,26 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# --- Supply-chain hardening (pnpm >=10.26) ---
+# Block transitive deps resolved from non-registry / untrusted sources.
+blockExoticSubdeps: true
+# Refuse settings downgrades pushed by a malicious package update.
+trustPolicy: no-downgrade
+# Age gate (minutes) before a freshly published version may be installed.
+# NOTE: pnpm re-verifies this against the WHOLE lockfile on every install (incl.
+# --frozen-lockfile and turbo's deps-status precheck). The Phase-0 stack (Next 16,
+# Tailwind 4.3.2, vitest/rolldown, next-intl) is all <7 days old right now, so any
+# positive gate makes the repo uninstallable. Set to 0 to unblock; raise to 10080
+# (7 days) once the stack has aged, or pin older versions. See README "Supply chain".
+minimumReleaseAge: 0
+
+# pnpm 11 blocks lifecycle build scripts by default. Explicitly allow only the
+# native-binary packages we actually use (esbuild: tsx/vitest, swc: Next, sharp:
+# Next image, parcel watcher: dev file-watching, msgpackr-extract: bullmq perf).
+allowBuilds:
+  '@parcel/watcher': true
+  '@swc/core': true
+  esbuild: true
+  msgpackr-extract: true
+  sharp: true

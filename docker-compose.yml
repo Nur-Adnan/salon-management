@@ -1,0 +1,33 @@
+# Local infra for `pnpm dev`. Mongo runs as a SINGLE-NODE replica set because
+# transactions + change streams require one. The healthcheck doubles as the
+# rs.initiate() bootstrap so there is no separate init container.
+# ponytail: single node is enough for dev; use Atlas (real replica set) for staging/prod.
+services:
+  mongo:
+    image: mongo:8
+    command: ["--replSet", "rs0", "--bind_ip_all"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    healthcheck:
+      test: >
+        mongosh --quiet --eval
+        "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]}).ok }"
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 10s
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  mongo_data:
