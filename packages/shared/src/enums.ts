@@ -25,3 +25,23 @@ export const APPOINTMENT_STATUS = [
   'cancelled',
 ] as const;
 export type AppointmentStatus = (typeof APPOINTMENT_STATUS)[number];
+
+export const RESOURCE_TYPES = ['chair', 'room', 'station'] as const;
+export type ResourceType = (typeof RESOURCE_TYPES)[number];
+
+export const MEMBERSHIP_STATUS = ['invited', 'active', 'disabled'] as const;
+export type MembershipStatus = (typeof MEMBERSHIP_STATUS)[number];
+
+// CASL vocabulary, shared so the frontend can reason about permissions too.
+export const ACTIONS = ['manage', 'create', 'read', 'update', 'delete', 'invite'] as const;
+export type Action = (typeof ACTIONS)[number];
+
+export const SUBJECTS = [
+  'Organization',
+  'Branch',
+  'User',
+  'Membership',
+  'Resource',
+  'all',
+] as const;
+export type Subject = (typeof SUBJECTS)[number];

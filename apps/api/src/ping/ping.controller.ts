@@ -8,10 +8,12 @@ import { PinoLogger } from 'nestjs-pino';
 import { IdempotencyInterceptor } from '../common/idempotency/idempotency.interceptor';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe';
 import { PingedEvent } from '../events/pinged.event';
+import { Public } from '../iam/auth/public.decorator';
 import { SAMPLE_QUEUE } from '../queue/queue.constants';
 
 // Phase-0 end-to-end probe: validates (shared Zod) -> emits a domain event
 // (audit subscribes) -> best-effort enqueue -> returns the correlation id.
+@Public()
 @Controller('ping')
 export class PingController {
   constructor(

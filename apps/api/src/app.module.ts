@@ -1,17 +1,23 @@
-import { Module } from '@nestjs/common';
+import { type MiddlewareConsumer, Module, type NestModule } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { APP_FILTER } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { CqrsModule } from '@nestjs/cqrs';
 import { MongooseModule } from '@nestjs/mongoose';
 import { randomUUID } from 'node:crypto';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { LoggerModule } from 'nestjs-pino';
 import { AuditModule } from './audit/audit.module';
+import { ContextMiddleware } from './common/context/context.middleware';
+import { CoreModule } from './common/core.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { type Env, validateEnv } from './config/env';
+import { AbilitiesGuard } from './iam/casl/abilities.guard';
+import { JwtAuthGuard } from './iam/auth/jwt-auth.guard';
+import { IamModule } from './iam/iam.module';
 import { HealthModule } from './health/health.module';
 import { PingModule } from './ping/ping.module';
 import { QueueModule } from './queue/queue.module';
+import { ResourcesModule } from './resources/resources.module';
 import { RedisModule } from './infra/redis/redis.module';
 
 @Module({
@@ -49,12 +55,25 @@ import { RedisModule } from './infra/redis/redis.module';
       }),
     }),
     CqrsModule,
+    CoreModule,
     RedisModule,
     QueueModule,
     AuditModule,
+    IamModule,
+    ResourcesModule,
     HealthModule,
     PingModule,
   ],
-  providers: [{ provide: APP_FILTER, useClass: AllExceptionsFilter }],
+  providers: [
+    { provide: APP_FILTER, useClass: AllExceptionsFilter },
+    // Order matters: authenticate + populate context, THEN authorize.
+    { provide: APP_GUARD, useClass: JwtAuthGuard },
+    { provide: APP_GUARD, useClass: AbilitiesGuard },
+  ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer): void {
+    // Establish the AsyncLocalStorage request context for every route.
+    consumer.apply(ContextMiddleware).forRoutes('*');
+  }
+}

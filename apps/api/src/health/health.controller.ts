@@ -4,8 +4,10 @@ import {
   HealthCheckService,
   MongooseHealthIndicator,
 } from '@nestjs/terminus';
+import { Public } from '../iam/auth/public.decorator';
 import { RedisHealthIndicator } from './redis.health';
 
+@Public()
 @Controller('health')
 export class HealthController {
   constructor(
