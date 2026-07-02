@@ -19,6 +19,13 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             Salon Admin
           </Link>
           <nav className="flex flex-wrap gap-3 text-sm opacity-80">
+            <Link href="/calendar">Calendar</Link>
+            <Link href="/pos">POS</Link>
+            <Link href="/sales">Sales</Link>
+            <Link href="/customers">Customers</Link>
+            <Link href="/gift-cards">Gift Cards</Link>
+            <Link href="/coupons">Coupons</Link>
+            <Link href="/subscription-plans">Plans</Link>
             <Link href="/resources">Resources</Link>
             <Link href="/catalog/services">Services</Link>
             <Link href="/catalog/products">Products</Link>

@@ -84,6 +84,15 @@ export class ProductsController {
     return (await this.products.find()).map(serializeProduct);
   }
 
+  // Barcode/QR scan-to-add: POS scans a code, this resolves it to a product.
+  @Get('products/barcode/:code')
+  @CheckAbility('read', 'Catalog')
+  async byBarcode(@Param('code') code: string) {
+    const p = await this.products.findOne({ barcode: code });
+    if (!p) throw new NotFoundException('no product with that barcode');
+    return serializeProduct(p);
+  }
+
   @Post('products')
   @CheckAbility('create', 'Catalog')
   async create(@Body(new ZodValidationPipe(createProductSchema)) dto: CreateProduct) {

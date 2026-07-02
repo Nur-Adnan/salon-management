@@ -7,6 +7,13 @@ export const serializeBranch = (b: BranchDocument) => ({
   timezone: b.timezone,
   address: b.address ?? null,
   status: b.status,
+  slotMinutes: b.slotMinutes ?? 15,
+  vatRateBps: b.vatRateBps ?? 0,
+  workingHours: (b.workingHours ?? []).map((d) => ({
+    closed: d.closed,
+    open: d.open,
+    close: d.close,
+  })),
 });
 
 export const serializeMembership = (m: MembershipDocument) => ({

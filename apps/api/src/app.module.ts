@@ -10,6 +10,10 @@ import { AuditModule } from './audit/audit.module.js';
 import { CatalogModule } from './catalog/catalog.module.js';
 import { ContextMiddleware } from './common/context/context.middleware.js';
 import { CoreModule } from './common/core.module.js';
+import { CrmModule } from './crm/crm.module.js';
+import { CustomersModule } from './customers/customers.module.js';
+import { PosModule } from './pos/pos.module.js';
+import { SchedulingModule } from './scheduling/scheduling.module.js';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
 import { type Env, validateEnv } from './config/env.js';
 import { AbilitiesGuard } from './iam/casl/abilities.guard.js';
@@ -63,6 +67,10 @@ import { RedisModule } from './infra/redis/redis.module.js';
     IamModule,
     ResourcesModule,
     CatalogModule,
+    CustomersModule,
+    SchedulingModule,
+    PosModule,
+    CrmModule,
     HealthModule,
     PingModule,
   ],
