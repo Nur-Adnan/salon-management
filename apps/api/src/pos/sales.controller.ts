@@ -38,7 +38,8 @@ export class SalesController {
     @Body(new ZodValidationPipe(createSaleSchema)) dto: CreateSale,
     @Headers('idempotency-key') key?: string,
   ) {
-    return serializeSale(await this.sales.checkout(dto, key ?? null));
+    const { sale } = await this.sales.checkout(dto, key ?? null);
+    return serializeSale(sale);
   }
 
   // Declared before ':id' so it isn't captured as an id param.
@@ -60,14 +61,19 @@ export class SalesController {
     return serializeSale(await this.sales.get(id));
   }
 
+  // Idempotent top-up: the interceptor replays the cached response for a
+  // repeated Idempotency-Key (Redis fast path); the service also persists the
+  // key on the Payment record itself so a replay is a no-op even without Redis.
   @Post(':id/payments')
   @HttpCode(200)
+  @UseInterceptors(IdempotencyInterceptor)
   @CheckAbility('update', 'Sale')
   async addPayments(
     @Param('id', new ZodValidationPipe(objectIdSchema)) id: string,
     @Body(new ZodValidationPipe(addPaymentsSchema)) dto: AddPayments,
+    @Headers('idempotency-key') key?: string,
   ) {
-    return serializeSale(await this.sales.addPayments(id, dto.payments));
+    return serializeSale(await this.sales.addPayments(id, dto.payments, key ?? null));
   }
 
   @Post(':id/void')

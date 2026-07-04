@@ -36,13 +36,16 @@ step to race against.
 
 **Coupon** — `percent` (basis points) or `fixed` (minor units), optional
 `minSpend`/`maxDiscount`/`maxRedemptions`/active window. The discount is
-computed by `applyCoupon` (`packages/shared/src/pos.ts`... `crm.ts`): it
-distributes the coupon's discount **pro-rata across lines by each line's
-current net amount**, on top of (not replacing) any manual per-line discount,
-so tax is recomputed correctly per line on the reduced base — no separate
-"coupon discount" field, it's already inside each line's `discount`/`tax`.
-Redemption-count is claimed with the same atomic guard, inside the checkout
-transaction, so a single-use coupon really is single-use under concurrency.
+computed by `applyCoupon` (`packages/shared/src/crm.ts`): it distributes the
+coupon's discount **pro-rata across lines by each line's current net amount,
+capped at that line's own net headroom** (so a thin-headroom line can never be
+asked to absorb more than it has), on top of (not replacing) any manual
+per-line discount, so tax is recomputed correctly per line on the reduced
+base — no separate "coupon discount" field, it's already inside each line's
+`discount`/`tax`. Redemption-count is claimed with the same atomic guard,
+inside the checkout transaction, and only when the coupon actually changed
+something — so a single-use coupon is single-use under concurrency and can't
+be burned for zero benefit on an already-fully-discounted cart.
 
 **Referral** — a lazily-generated shareable code per customer
 (`POST /customers/:id/referral-code`, most customers never need one so it
@@ -94,13 +97,45 @@ lazily-generated `referralCode`.
 | Subscription perk (`discountBps`) | Advertised plan metadata only, **not** auto-applied at checkout | Stacking a membership discount with coupon logic (order of application, interaction with `maxDiscount`) is real design surface the acceptance criteria doesn't require; wire it in deliberately later rather than half-build the stacking rules now. |
 | Module boundary | `PosModule` re-registers CRM schemas directly (matching how it already re-registers Service/Product/Branch/Customer) and exports `SalesService`; `CrmModule` imports `PosModule` for the one thing it needs (subscription renew) | One-directional dependency, no circular module import, consistent with every prior phase's cross-module model-sharing convention. |
 
+## Adversarial review
+
+Before calling this phase done, a 4-dimension adversarial review (money/ledger
+correctness, concurrency/transaction correctness, tenant security, POS-wiring
+edge cases) was run against the diff, then every finding was independently
+re-verified against the actual code (not just re-asserted) before being
+trusted. **18 findings were raised; all 18 survived verification.** All were
+fixed and are covered by new regression tests:
+
+| # | Finding | Fix |
+|---|---------|-----|
+| 1 (critical) | `voidSale()` checked `sale.status` via a plain read *before* the transaction, then reversed balances with unconditional `$inc` — two concurrent (or duplicated) void requests could both pass the check and both reverse stock/gift-card/loyalty balances. | The status transition itself is now the atomic guard: `findOneAndUpdate({status:'completed'}, {$set:{status:'voided'}}, {new:false})` as the *first* operation inside the transaction. Only one call can ever match; a second returns `null` and cleanly 400s instead of double-reversing. |
+| 2 (critical) | That same guard was gated on `p.status`, an in-memory field the callback itself mutates — if MongoDB auto-retried the transaction (a real, driver-documented behavior on a transient conflict), the retry would see its own prior attempt's mutation and skip the reversal, while still committing `status:'voided'`. | The pre-update snapshot (`new:false`) is read fresh from the DB on every attempt, never from a JS object carried across a retry. |
+| 3 (critical) | `addPayments()` had **no idempotency protection at all** — no interceptor, no key — while capturing real money (gift-card/loyalty debits, gateway charges). A retried request captured twice. | Added `Idempotency-Key` header + `IdempotencyInterceptor` (Redis fast path) **and** a DB-durable guard: the key is stamped on the `Payment` subdocument itself, so a replay is detected and no-oped even without Redis. |
+| 4 (critical) | `addPayments()` also fetched `sale` *before* its transaction and pushed onto that same in-memory array inside the retryable callback — a driver retry would push a second time even though only one attempt's writes actually commit. | `sale` is now fetched fresh *inside* the transaction callback on every attempt. |
+| 5 (high) | The `{tenantId, saleId, type}` unique index meant to make loyalty **earn** idempotent also (accidentally) capped **redeem** at one-per-sale-ever — a legitimate second redemption (checkout, then more via `addPayments` to clear a due balance) hit an uncaught duplicate-key 500. | Scoped the partial-unique index to `type:'earn'` only; `redeem`/`adjust` are no longer constrained to one-per-sale. |
+| 6 (high) | `LoyaltyService.adjust()`, `GiftCardsService.issue()`, `ReferralsService.rewardIfPending()` wrote a balance and its ledger entry as two independent, non-transactional calls — contradicting the schema's own "written in lockstep" comment. | All three now wrap both writes in `session.withTransaction()`, matching the pattern `SalesService` already used. |
+| 7 (high) | A retried `subscriptions.renew()` (same idempotency key) correctly got the *same* sale back from `checkout()`, but unconditionally advanced the billing period again — a free extra period per replay. | `checkout()` now returns `{ sale, wasReplayed }`; `renew()` only advances the period when `wasReplayed` is false. |
+| 8 (medium) | `applyCoupon()` could hand the last-eligible line more of the flooring remainder than that line's own net headroom, silently shaved off by `lineTotals`' gross-clamp — the coupon under-delivered a poisha or two with no error. | Rewrote the distribution as floor-then-headroom-capped-remainder; a regression test reproduces the exact adversarial scenario. |
+| 9 (medium) | A coupon applied to an already-fully-discounted (zero-net) cart was correctly a no-op discount-wise, but `checkout()` still claimed a redemption slot — a shared single-use code could be burned for zero benefit. | The redemption is only claimed when `applyCoupon` actually changed the pricing lines (checked by reference identity). |
+| 10 (medium) | `voidSale()` recomputed loyalty points *per payment*, but `capturePayments()` only guarantees the *sum* of loyalty lines is a whole-taka amount — a legitimately captured multi-line loyalty payment could make `void()` throw and the sale become permanently un-voidable. | The reversal now sums all captured loyalty payments first, then converts once — mirroring how the forward path already worked. |
+| 11 (medium) | `subscriptions.subscribe()` created a `CustomerSubscription` for any syntactically-valid `customerId` with no check it belongs to the tenant. | Validated via `CustomerRepository.findById` (tenant-scoped), same pattern `SalesService.resolveCustomer` already used. |
+| 12 (medium) | `TreatmentRecordsService.create()` had the same gap — clinical/consent data attached to an unverified customer id. | Same fix. |
+| 13 (medium) | A `'subscription'` sale line could be rung up via a bare `POST /sales` (taking payment with no entitlement created), and symmetrically `subscribe()` granted entitlement with no payment — two independent, uncoordinated paths. | `checkout()` now takes `opts.allowSubscriptionLines`, set only by `SubscriptionsService.renew()`; a direct client request with `kind:'subscription'` is rejected. |
+| 14 (low) | `nextInvoiceNumber()` incremented the counter *before* the transaction started; an aborted transaction (insufficient balance, exhausted coupon, lost idempotency race) permanently burned that number, leaving a gap. | The counter increment now happens inside the transaction, rolling back with everything else on abort. |
+| 15–16 (low) | `LoyaltyService`/`GiftCardsService.issue()` accepted an unvalidated `customerId` the same way (10/11 above, lower blast radius). | Same validation added for consistency. |
+| — (medium, accepted) | `PaymentGateway.charge()` runs inside the retryable transaction callback; today's sandbox providers are stateless so a retry is harmless, but a *future* real SDK call (Phase 14) would double-charge on a driver retry unless called with a provider-side idempotency key. | No code change — today's providers have no side effects to duplicate. Documented as a Phase 14 constraint at the call site and in Follow-ups below. |
+
 ## Verification
 
-- `pnpm typecheck` 6/6 · `pnpm lint` 6/6 · `pnpm test` (shared **49**, incl. 20
-  new CRM math/state-machine tests + 13 POS tests; api 19) · `pnpm build` 4/4
+- `pnpm typecheck` 6/6 · `pnpm lint` 6/6 · `pnpm test` (shared **50**, incl. 21
+  CRM math/state-machine tests + 13 POS tests; api 19) · `pnpm build` 4/4
   (new routes: `/customers`, `/customers/[id]`, `/gift-cards`, `/coupons`,
   `/subscription-plans` all compiled).
-- **Live e2e — 73/73** against a single-node replica set + Redis:
+- **Live e2e — 101/101** against a single-node replica set + Redis (73
+  feature-coverage checks + 28 regression checks targeting each fix above —
+  double-void race, addPayments replay/concurrency, the loosened loyalty
+  index, subscription-renew replay, the zero-effect-coupon burn, and every
+  newly-validated `customerId` path):
   - **Loyalty**: earn on sale completion, manual adjust (credit/debit, debit
     beyond balance rejected), whole-taka-only redemption, insufficient balance
     rejected, anonymous (no-customer) redemption rejected, **10-way concurrent
@@ -134,11 +169,17 @@ lazily-generated `referralCode`.
 ## Follow-ups
 - Real reminder/notification dispatch for subscriptions (Phase 10) once
   tokenized/recurring billing exists (Phase 14) to make auto-charge honest.
+- Phase 14's real payment SDKs (bKash/card/SSLCommerz) must be called with a
+  provider-side idempotency key — `capturePayments()` runs inside a retryable
+  Mongo transaction, and today's stateless sandbox providers hide that a
+  driver-level retry would otherwise re-issue a real charge.
 - Subscription `discountBps` perk auto-applied at POS checkout, with an
   explicit stacking order against coupons.
 - Photo storage/upload (currently a URL string only, matching Phase 4's
   invoice-PDF deferral for the same reason — no object-storage seam yet).
 - Gift-card/coupon send campaigns, audience segmentation (`Campaign` in the
   blueprint's domain model) — out of scope for this phase's CRM core.
+- Partial refunds (`voidSale` is still whole-sale-only, matching the same
+  scoping decision Phase 4 made).
 
 ## Next: Phase 6 — Staff & HR (attendance, commission, payroll, tips).

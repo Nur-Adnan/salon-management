@@ -119,15 +119,28 @@ export function applyCoupon(lines: SaleLineInput[], coupon: CouponLike): SaleLin
   discountAmount = Math.max(0, Math.min(discountAmount, preCouponNet));
   if (discountAmount === 0) return lines;
 
-  const lastEligible = nets.reduce((last, n, i) => (n > 0 ? i : last), -1);
-  let distributed = 0;
+  // Pass 1: each eligible line's floored proportional share. This can never
+  // exceed that line's own net (discountAmount <= preCouponNet, so
+  // discountAmount*net/preCouponNet <= net), so every line has headroom left.
+  const extras = nets.map((n) => (n > 0 ? Math.floor((discountAmount * n) / preCouponNet) : 0));
+  const distributed = extras.reduce((a, b) => a + b, 0);
+
+  // Pass 2: the flooring remainder (always < lines.length) is handed out one
+  // poisha at a time to lines that still have headroom — never more than a
+  // line's own remaining net, so lineTotals' gross-clamp can never silently
+  // shave off part of the coupon's intended discount.
+  let remainder = discountAmount - distributed;
+  for (let i = 0; remainder > 0 && i < lines.length; i++) {
+    const headroom = (nets[i] ?? 0) - (extras[i] ?? 0);
+    if (headroom <= 0) continue;
+    const take = Math.min(headroom, remainder);
+    extras[i] = (extras[i] ?? 0) + take;
+    remainder -= take;
+  }
+
   return lines.map((l, i) => {
-    const net = nets[i] ?? 0;
-    if (net <= 0) return l;
-    const extra =
-      i === lastEligible ? discountAmount - distributed : Math.floor((discountAmount * net) / preCouponNet);
-    distributed += extra;
-    return { ...l, discount: money(l.discount.amount + extra) };
+    const extra = extras[i] ?? 0;
+    return extra > 0 ? { ...l, discount: money(l.discount.amount + extra) } : l;
   });
 }
 

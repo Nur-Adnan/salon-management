@@ -11,6 +11,7 @@ import {
   type CreateSale,
   type PaymentInputDto,
   type SaleLineInput,
+  type SaleLineKind,
   amountCaptured,
   applyCoupon,
   lineTotals,
@@ -54,6 +55,16 @@ interface ResolvedLine {
   pricing: SaleLineInput;
 }
 
+export interface CheckoutResult {
+  sale: SaleDocument;
+  // True when this call returned a PRE-EXISTING sale (idempotency-key replay or
+  // a concurrent duplicate that lost the race) rather than freshly creating
+  // one. Callers that do something ELSE alongside checkout (e.g. advancing a
+  // subscription's billing period) must skip that side effect on a replay —
+  // otherwise a retried request grants it twice for one payment.
+  wasReplayed: boolean;
+}
+
 @Injectable()
 export class SalesService {
   constructor(
@@ -89,7 +100,16 @@ export class SalesService {
     };
   }
 
-  async checkout(dto: CreateSale, idempotencyKey: string | null): Promise<SaleDocument> {
+  // `opts.allowSubscriptionLines` is set ONLY by SubscriptionsService.renew() —
+  // the public POST /sales DTO can never request kind:'subscription' (see
+  // saleLineInputSchema), so a bare checkout can't take money for a plan
+  // without going through the renew flow that actually advances the
+  // subscription's billing period alongside it.
+  async checkout(
+    dto: CreateSale,
+    idempotencyKey: string | null,
+    opts?: { allowSubscriptionLines?: boolean },
+  ): Promise<CheckoutResult> {
     const { tenantId, branchId, userId } = this.scope();
 
     // Idempotency fast-path: a replayed key returns the original sale unchanged —
@@ -97,7 +117,7 @@ export class SalesService {
     // the hard guarantee if two identical requests race past this check.
     if (idempotencyKey) {
       const prior = await this.sales.findOne({ tenantId, idempotencyKey }).exec();
-      if (prior) return prior;
+      if (prior) return { sale: prior, wasReplayed: true };
     }
 
     const branch = await this.getBranch(tenantId, branchId);
@@ -105,17 +125,25 @@ export class SalesService {
     const customerId = await this.resolveCustomer(tenantId, dto.customerId);
     const appointmentId = await this.resolveAppointment(tenantId, branchId, dto.appointmentId);
 
-    const { lines: resolved, productQtys } = await this.buildLines(tenantId, dto.lines, vatRateBps);
+    const { lines: resolved, productQtys } = await this.buildLines(
+      tenantId,
+      dto.lines,
+      vatRateBps,
+      opts?.allowSubscriptionLines ?? false,
+    );
     let pricingLines = resolved.map((r) => r.pricing);
 
     let coupon: CouponDocument | null = null;
+    let couponChangedDiscount = false;
     if (dto.couponCode) {
       coupon = await this.validateCoupon(tenantId, dto.couponCode, pricingLines);
+      const beforeCoupon = pricingLines;
       pricingLines = applyCoupon(pricingLines, {
         type: coupon.type,
         value: coupon.value,
         maxDiscount: coupon.maxDiscount ?? undefined,
       });
+      couponChangedDiscount = pricingLines !== beforeCoupon;
     }
 
     const totals = saleTotals(pricingLines, money(dto.tip));
@@ -137,12 +165,16 @@ export class SalesService {
       } as SaleLine;
     });
 
-    const invoiceNumber = await this.nextInvoiceNumber(tenantId);
     const saleId = new Types.ObjectId();
 
     const session = await this.conn.startSession();
     try {
       await session.withTransaction(async () => {
+        // The invoice counter increment lives INSIDE the transaction: if the
+        // transaction aborts for any reason, the number is rolled back with it
+        // instead of being permanently burned (a gap in the invoice sequence).
+        const invoiceNumber = await this.nextInvoiceNumber(tenantId, session);
+
         // Payment capture (incl. gift-card/loyalty ledger debits) happens INSIDE
         // the transaction: if the sale never commits, a customer's balance must
         // never have been touched either.
@@ -195,7 +227,10 @@ export class SalesService {
             .exec();
         }
 
-        if (coupon) {
+        // Only claim a redemption slot if the coupon actually changed anything —
+        // a coupon applied to an already-fully-discounted (zero-net) cart is a
+        // no-op and must not burn a limited-use code for zero benefit.
+        if (coupon && couponChangedDiscount) {
           const claimed = await claimCouponRedemption(this.coupons, { tenantId, couponId: coupon._id }, session);
           if (!claimed) throw new ConflictException('this coupon just reached its redemption limit');
         }
@@ -205,7 +240,7 @@ export class SalesService {
       // the sale the winner created rather than surfacing the duplicate error.
       if (isDuplicateKeyError(err) && idempotencyKey) {
         const winner = await this.sales.findOne({ tenantId, idempotencyKey }).exec();
-        if (winner) return winner;
+        if (winner) return { sale: winner, wasReplayed: true };
         throw new ConflictException('duplicate checkout');
       }
       throw err;
@@ -216,19 +251,33 @@ export class SalesService {
     this.eventBus.publish(new SaleCompleted(String(tenantId), String(branchId), String(saleId)));
     const created = await this.sales.findById(saleId).exec();
     if (!created) throw new NotFoundException('sale');
-    return created;
+    return { sale: created, wasReplayed: false };
   }
 
-  async addPayments(id: string, paymentsIn: PaymentInputDto[]): Promise<SaleDocument> {
-    const sale = await this.get(id);
-    if (sale.status === 'voided') throw new BadRequestException('cannot pay a voided sale');
+  async addPayments(id: string, paymentsIn: PaymentInputDto[], idempotencyKey: string | null): Promise<SaleDocument> {
     const { tenantId } = this.scope();
 
     // A gift-card/loyalty debit and the sale update that records it commit
-    // together — the same all-or-nothing guarantee checkout() gives.
+    // together — the same all-or-nothing guarantee checkout() gives. `sale` is
+    // fetched FRESH inside the callback (not reused across a possible driver
+    // retry of this transaction) so a retried attempt never re-pushes payments
+    // onto an array that already reflects a rolled-back prior attempt.
     const session = await this.conn.startSession();
     try {
       await session.withTransaction(async () => {
+        const sale = await this.sales
+          .findOne({ _id: new Types.ObjectId(id), tenantId, deletedAt: null })
+          .session(session)
+          .exec();
+        if (!sale) throw new NotFoundException('sale not found');
+        if (sale.status === 'voided') throw new BadRequestException('cannot pay a voided sale');
+
+        // Durable (DB-persisted, not just Redis) idempotency: a replayed request
+        // with the same key is a no-op once its payment is already recorded.
+        if (idempotencyKey && sale.payments.some((p) => p.idempotencyKey === idempotencyKey)) {
+          return;
+        }
+
         const captured = await this.capturePayments(
           paymentsIn,
           sale.invoiceNumber,
@@ -237,7 +286,8 @@ export class SalesService {
           sale._id as Types.ObjectId,
           session,
         );
-        sale.payments.push(...(captured as Payment[]));
+        const stamped = captured.map((p) => ({ ...p, idempotencyKey: idempotencyKey ?? null }));
+        sale.payments.push(...(stamped as Payment[]));
         sale.paymentStatus = salePaymentStatus(
           money(sale.total.amount),
           amountCaptured(
@@ -249,22 +299,40 @@ export class SalesService {
     } finally {
       await session.endSession();
     }
-    return sale;
+    return this.get(id);
   }
 
   async voidSale(id: string, reason?: string): Promise<SaleDocument> {
     const { tenantId, branchId } = this.scope();
-    const sale = await this.sales
-      .findOne({ _id: new Types.ObjectId(id), tenantId, branchId, deletedAt: null })
-      .exec();
-    if (!sale) throw new NotFoundException('sale not found');
-    if (sale.status === 'voided') throw new BadRequestException('sale is already voided');
 
     const session = await this.conn.startSession();
     try {
       await session.withTransaction(async () => {
-        // Reverse the stock decrement for every product line.
-        for (const l of sale.lines) {
+        // Atomic status-transition guard: only ONE void attempt can ever match
+        // status:'completed' and win this update. A concurrent or duplicated
+        // void request (or a driver retry of THIS attempt) finds nothing to
+        // match and falls into the branch below instead of reversing balances
+        // or stock a second time. `new: false` returns the PRE-update snapshot,
+        // so "which payments were captured" is read once, from the database,
+        // inside this exact attempt — never from a JS object mutated by an
+        // earlier (possibly since-rolled-back) invocation of this callback.
+        const before = await this.sales
+          .findOneAndUpdate(
+            { _id: new Types.ObjectId(id), tenantId, branchId, status: 'completed', deletedAt: null },
+            { $set: { status: 'voided', voidReason: reason ?? null, paymentStatus: 'unpaid' } },
+            { session, new: false },
+          )
+          .exec();
+        if (!before) {
+          const exists = await this.sales
+            .findOne({ _id: new Types.ObjectId(id), tenantId, branchId, deletedAt: null })
+            .session(session)
+            .exec();
+          if (!exists) throw new NotFoundException('sale not found');
+          throw new BadRequestException('sale is already voided');
+        }
+
+        for (const l of before.lines) {
           if (l.kind !== 'product') continue;
           await this.stock
             .updateOne(
@@ -274,51 +342,35 @@ export class SalesService {
             )
             .exec();
         }
-        // Reverse any gift-card / loyalty redemption too — a void must not leave
-        // a customer's balance permanently short for a sale that no longer exists.
-        for (const p of sale.payments) {
-          if (p.status !== 'captured') continue;
-          if (p.method === 'gift_card' && p.providerRef) {
-            const card = await this.giftCards
-              .findOneAndUpdate(
-                { tenantId, code: p.providerRef },
-                { $inc: { 'balance.amount': p.amount.amount } },
-                { new: true, session },
-              )
-              .exec();
-            if (card) {
-              await this.giftCardLedger.create(
-                [
-                  {
-                    tenantId,
-                    giftCardId: card._id,
-                    type: 'adjust',
-                    amount: { amount: p.amount.amount, currency: 'BDT' },
-                    saleId: sale._id,
-                    note: 'void reversal',
-                  },
-                ] as never,
-                { session },
-              );
-            }
-          } else if (p.method === 'loyalty' && sale.customerId) {
-            const points = loyaltyPointsForRedemption(p.amount.amount);
-            const acct = await this.loyaltyAccounts
-              .findOneAndUpdate(
-                { tenantId, customerId: sale.customerId },
-                { $inc: { balance: points } },
-                { new: true, upsert: true, session },
-              )
-              .exec();
-            await this.loyaltyLedger.create(
+
+        // Gift cards: one reversal per captured gift_card payment (a sale can
+        // reference more than one distinct card). Loyalty: aggregated into ONE
+        // reversal — a sale can have multiple captured loyalty payments (one at
+        // checkout, another later via addPayments), and loyaltyPointsForRedemption
+        // only accepts whole-taka amounts, so summing first (rather than
+        // converting each payment individually) avoids rejecting a legitimately
+        // captured combination whose individual amounts aren't each a multiple
+        // of 100 poisha even though their sum is.
+        const capturedPayments = before.payments.filter((p) => p.status === 'captured');
+
+        for (const p of capturedPayments) {
+          if (p.method !== 'gift_card' || !p.providerRef) continue;
+          const card = await this.giftCards
+            .findOneAndUpdate(
+              { tenantId, code: p.providerRef },
+              { $inc: { 'balance.amount': p.amount.amount } },
+              { new: true, session },
+            )
+            .exec();
+          if (card) {
+            await this.giftCardLedger.create(
               [
                 {
                   tenantId,
-                  accountId: acct._id,
-                  customerId: sale.customerId,
+                  giftCardId: card._id,
                   type: 'adjust',
-                  points,
-                  saleId: sale._id,
+                  amount: { amount: p.amount.amount, currency: 'BDT' },
+                  saleId: before._id,
                   note: 'void reversal',
                 },
               ] as never,
@@ -326,18 +378,53 @@ export class SalesService {
             );
           }
         }
-        sale.status = 'voided';
-        sale.voidReason = reason ?? null;
-        for (const p of sale.payments) if (p.status === 'captured') p.status = 'reversed';
-        sale.paymentStatus = 'unpaid';
-        await sale.save({ session });
+
+        const loyaltyReversalAmount = capturedPayments
+          .filter((p) => p.method === 'loyalty')
+          .reduce((n, p) => n + p.amount.amount, 0);
+        if (loyaltyReversalAmount > 0 && before.customerId) {
+          const points = loyaltyPointsForRedemption(loyaltyReversalAmount);
+          const acct = await this.loyaltyAccounts
+            .findOneAndUpdate(
+              { tenantId, customerId: before.customerId },
+              { $inc: { balance: points } },
+              { new: true, upsert: true, session },
+            )
+            .exec();
+          await this.loyaltyLedger.create(
+            [
+              {
+                tenantId,
+                accountId: acct._id,
+                customerId: before.customerId,
+                type: 'adjust',
+                points,
+                saleId: before._id,
+                note: 'void reversal',
+              },
+            ] as never,
+            { session },
+          );
+        }
+
+        // Flip every captured payment to 'reversed' in one atomic array update —
+        // no in-memory reconstruction of the payments array to save.
+        await this.sales
+          .updateOne(
+            { _id: before._id },
+            { $set: { 'payments.$[elem].status': 'reversed' } },
+            { session, arrayFilters: [{ 'elem.status': 'captured' }] },
+          )
+          .exec();
       });
     } finally {
       await session.endSession();
     }
 
-    this.eventBus.publish(new SaleVoided(String(tenantId), String(branchId), String(sale._id)));
-    return sale;
+    this.eventBus.publish(new SaleVoided(String(tenantId), String(branchId), id));
+    const result = await this.sales.findById(id).exec();
+    if (!result) throw new NotFoundException('sale');
+    return result;
   }
 
   async list(filter: { date?: string; status?: string }): Promise<SaleDocument[]> {
@@ -359,6 +446,13 @@ export class SalesService {
       .exec();
     if (!sale) throw new NotFoundException('sale not found');
     return sale;
+  }
+
+  /** Read-only lookup for callers (e.g. SubscriptionsService) that need to know
+   * whether a sale already exists for a given idempotency key. */
+  async findByIdempotencyKey(idempotencyKey: string): Promise<SaleDocument | null> {
+    const { tenantId } = this.scope();
+    return this.sales.findOne({ tenantId, idempotencyKey }).exec();
   }
 
   // Daily totals for the sales view (completed sales only; voided excluded).
@@ -448,36 +542,46 @@ export class SalesService {
     tenantId: Types.ObjectId,
     linesIn: CreateSale['lines'],
     vatRateBps: number,
+    allowSubscriptionLines: boolean,
   ): Promise<{ lines: ResolvedLine[]; productQtys: Map<string, number> }> {
     const lines: ResolvedLine[] = [];
     const productQtys = new Map<string, number>();
 
     for (const li of linesIn) {
       const refId = new Types.ObjectId(li.refId);
+      const kind = li.kind as SaleLineKind;
       let name: { en: string; bn?: string | null };
       let unitAmount: number;
       let taxable: boolean;
 
-      if (li.kind === 'service') {
+      if (kind === 'service') {
         const s = await this.services.findOne({ _id: refId, tenantId, deletedAt: null }).exec();
         if (!s) throw new BadRequestException('unknown service');
         name = s.name;
         unitAmount = s.price.amount;
         taxable = s.taxable;
-      } else if (li.kind === 'product') {
+      } else if (kind === 'product') {
         const p = await this.products.findOne({ _id: refId, tenantId, deletedAt: null }).exec();
         if (!p) throw new BadRequestException('unknown product');
         name = p.name;
         unitAmount = p.retailPrice.amount;
         taxable = p.taxable;
         productQtys.set(li.refId, (productQtys.get(li.refId) ?? 0) + li.quantity);
-      } else if (li.kind === 'package') {
+      } else if (kind === 'package') {
         const pk = await this.packages.findOne({ _id: refId, tenantId, deletedAt: null }).exec();
         if (!pk) throw new BadRequestException('unknown package');
         name = pk.name;
         unitAmount = pk.price.amount;
         taxable = true; // a bundle is taxed as a whole at the branch rate
       } else {
+        // A subscription-plan renewal fee. Only reachable via
+        // SubscriptionsService.renew() (opts.allowSubscriptionLines) — the
+        // public checkout DTO's Zod schema never accepts this kind, so a plain
+        // POST /sales can't take a subscription payment without also going
+        // through the flow that advances the subscription's billing period.
+        if (!allowSubscriptionLines) {
+          throw new BadRequestException('subscription lines cannot be created directly');
+        }
         const plan = await this.subscriptionPlans.findOne({ _id: refId, tenantId, deletedAt: null }).exec();
         if (!plan) throw new BadRequestException('unknown subscription plan');
         name = plan.name;
@@ -488,7 +592,7 @@ export class SalesService {
       if (li.staffId) await this.assertStaffMember(tenantId, li.staffId);
 
       lines.push({
-        kind: li.kind,
+        kind,
         refId,
         name,
         staffId: li.staffId ? new Types.ObjectId(li.staffId) : null,
@@ -515,8 +619,7 @@ export class SalesService {
   // real ledger balance (never negative — see ledger.util.ts); everything else
   // goes through the sandbox PaymentGateway. All loyalty-method entries in one
   // request are aggregated into a SINGLE debit (one customer has one account,
-  // so there is nothing to gain from N separate debits, and it keeps the
-  // {tenantId, saleId, type} ledger-entry uniqueness simple).
+  // so there is nothing to gain from N separate debits).
   private async capturePayments(
     paymentsIn: PaymentInputDto[],
     invoiceNumber: string,
@@ -579,6 +682,13 @@ export class SalesService {
         } as Payment);
         continue;
       }
+      // NOTE for Phase 14 (real bKash/card/SSLCommerz SDKs replacing this
+      // sandbox): this call runs inside a retryable session.withTransaction
+      // callback. MongoDB may re-invoke the whole callback on a transient
+      // write conflict (e.g. from the coupon/stock/ledger writes elsewhere in
+      // this same transaction), which would re-issue a real charge. A future
+      // real provider must be called with a provider-side idempotency key
+      // (most gateway SDKs support one) so a driver-level retry can't double-charge.
       const res = await this.gateway.charge(p.method, {
         amountMinor: p.amount,
         reference: invoiceNumber,
@@ -595,12 +705,12 @@ export class SalesService {
     return out;
   }
 
-  private async nextInvoiceNumber(tenantId: Types.ObjectId): Promise<string> {
+  private async nextInvoiceNumber(tenantId: Types.ObjectId, session: ClientSession): Promise<string> {
     const c = await this.counters
       .findOneAndUpdate(
         { key: `${String(tenantId)}:invoice` },
         { $inc: { seq: 1 } },
-        { upsert: true, new: true },
+        { upsert: true, new: true, session },
       )
       .exec();
     return `INV-${String(c.seq).padStart(6, '0')}`;

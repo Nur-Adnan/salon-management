@@ -1,7 +1,7 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import type { CreateReferral } from '@salon/shared';
-import { type Model, Types } from 'mongoose';
+import { type Connection, type Model, Types } from 'mongoose';
 import { RequestContextService } from '../common/context/request-context.service.js';
 import { isDuplicateKeyError } from '../common/mongo.util.js';
 import { CustomerRepository } from '../customers/customer.repository.js';
@@ -17,6 +17,7 @@ export const REFERRAL_REWARD_POINTS = 100;
 @Injectable()
 export class ReferralsService {
   constructor(
+    @InjectConnection() private readonly conn: Connection,
     @InjectModel(Referral.name) private readonly referrals: Model<ReferralDocument>,
     @InjectModel(LoyaltyAccount.name) private readonly loyaltyAccounts: Model<LoyaltyAccountDocument>,
     @InjectModel(LoyaltyLedgerEntry.name) private readonly loyaltyLedger: Model<LoyaltyLedgerEntryDocument>,
@@ -60,25 +61,41 @@ export class ReferralsService {
     return this.referrals.find({ tenantId: this.tenantId() }).sort({ createdAt: -1 }).exec();
   }
 
-  /** Called by the SaleCompleted handler on a referred customer's first sale. */
+  /**
+   * Called by the SaleCompleted handler on a referred customer's first sale.
+   * The referral's pending->rewarded flip IS the idempotency guard (a second
+   * sale, or an accidental event replay, finds no 'pending' row left to
+   * reward) — so it must commit atomically with the points credit. Otherwise
+   * a crash between the two could flip the referral to 'rewarded' with the
+   * referrer never actually credited, and — since the flip already
+   * happened — that referral could never be rewarded on a later retry.
+   */
   async rewardIfPending(tenantId: Types.ObjectId, referredCustomerId: Types.ObjectId): Promise<void> {
-    const referral = await this.referrals
-      .findOneAndUpdate(
-        { tenantId, referredCustomerId, status: 'pending' },
-        { $set: { status: 'rewarded', rewardedAt: new Date() } },
-        { new: true },
-      )
-      .exec();
-    if (!referral) return; // no pending referral for this customer — nothing to do
-    await creditLoyalty(
-      { accounts: this.loyaltyAccounts, ledger: this.loyaltyLedger },
-      {
-        tenantId,
-        customerId: referral.referrerCustomerId,
-        points: referral.rewardPoints,
-        type: 'earn',
-        note: 'referral reward',
-      },
-    );
+    const session = await this.conn.startSession();
+    try {
+      await session.withTransaction(async () => {
+        const referral = await this.referrals
+          .findOneAndUpdate(
+            { tenantId, referredCustomerId, status: 'pending' },
+            { $set: { status: 'rewarded', rewardedAt: new Date() } },
+            { new: true, session },
+          )
+          .exec();
+        if (!referral) return; // no pending referral for this customer — nothing to do
+        await creditLoyalty(
+          { accounts: this.loyaltyAccounts, ledger: this.loyaltyLedger },
+          {
+            tenantId,
+            customerId: referral.referrerCustomerId,
+            points: referral.rewardPoints,
+            type: 'earn',
+            note: 'referral reward',
+          },
+          session,
+        );
+      });
+    } finally {
+      await session.endSession();
+    }
   }
 }

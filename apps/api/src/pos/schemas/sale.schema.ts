@@ -69,6 +69,11 @@ export class Payment {
 
   @Prop({ type: Date, default: null })
   capturedAt!: Date | null;
+
+  // Set only for payments added via POST /sales/:id/payments (addPayments), so a
+  // replayed request (same key) can be detected and skipped instead of re-captured.
+  @Prop({ type: String, default: null })
+  idempotencyKey!: string | null;
 }
 const PaymentSchema = SchemaFactory.createForClass(Payment);
 

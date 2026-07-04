@@ -31,9 +31,12 @@ export class LoyaltyLedgerEntry {
 export type LoyaltyLedgerEntryDocument = HydratedDocument<LoyaltyLedgerEntry>;
 export const LoyaltyLedgerEntrySchema = SchemaFactory.createForClass(LoyaltyLedgerEntry);
 LoyaltyLedgerEntrySchema.index({ tenantId: 1, accountId: 1, createdAt: -1 });
-// One 'earn' entry per sale (idempotent against event redelivery/replay); a sale
-// can also have at most one 'redeem' entry from checkout.
+// At most one 'earn' entry per sale — this is what makes the SaleCompleted
+// handler idempotent against event redelivery/replay. Scoped to 'earn' only:
+// a sale can legitimately redeem loyalty points more than once (e.g. once at
+// checkout, again later via addPayments to cover a remaining due balance), so
+// 'redeem'/'adjust' must NOT be constrained to one-per-sale.
 LoyaltyLedgerEntrySchema.index(
   { tenantId: 1, saleId: 1, type: 1 },
-  { unique: true, partialFilterExpression: { saleId: { $type: 'objectId' } } },
+  { unique: true, partialFilterExpression: { saleId: { $type: 'objectId' }, type: 'earn' } },
 );

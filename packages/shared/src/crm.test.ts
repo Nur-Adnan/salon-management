@@ -127,6 +127,20 @@ describe('coupon discount distribution', () => {
     expect(out[1].discount.amount).toBe(5000); // absorbs the whole coupon
   });
 
+  it('never hands the last-eligible line more discount than its own net headroom', () => {
+    // 3 lines, each already manually discounted to net=1 (gross 1000, discount 999).
+    // A fixed coupon of 2 must land as +1/+1/+0 (or any split respecting headroom=1
+    // per line), never +0/+0/+2 (which would push one line's discount to 1001 —
+    // more than its own gross — silently clamped away by lineTotals downstream).
+    const out = applyCoupon([line(1000, 1, 999), line(1000, 1, 999), line(1000, 1, 999)], {
+      type: 'fixed',
+      value: 2,
+    });
+    for (const l of out) expect(l.discount.amount).toBeLessThanOrEqual(1000); // never exceeds gross
+    const sum = out.reduce((n, l) => n + l.discount.amount, 0);
+    expect(sum).toBe(999 * 3 + 2); // the full 2 poisha actually lands somewhere
+  });
+
   it('no-op when there is nothing left to discount', () => {
     const lines = [line(10000, 1, 10000)];
     expect(applyCoupon(lines, { type: 'fixed', value: 5000 })).toBe(lines);

@@ -8,12 +8,14 @@ import type {
 import { canTransitionConsent } from '@salon/shared';
 import { type Model, Types } from 'mongoose';
 import { RequestContextService } from '../common/context/request-context.service.js';
+import { CustomerRepository } from '../customers/customer.repository.js';
 import { TreatmentRecord, type TreatmentRecordDocument } from './schemas/treatment-record.schema.js';
 
 @Injectable()
 export class TreatmentRecordsService {
   constructor(
     @InjectModel(TreatmentRecord.name) private readonly records: Model<TreatmentRecordDocument>,
+    private readonly customers: CustomerRepository,
     private readonly ctx: RequestContextService,
   ) {}
 
@@ -42,7 +44,8 @@ export class TreatmentRecordsService {
     return r;
   }
 
-  create(dto: CreateTreatmentRecord): Promise<TreatmentRecordDocument> {
+  async create(dto: CreateTreatmentRecord): Promise<TreatmentRecordDocument> {
+    if (!(await this.customers.findById(dto.customerId))) throw new BadRequestException('unknown customer');
     return this.records.create({
       tenantId: this.tenantId(),
       customerId: new Types.ObjectId(dto.customerId),

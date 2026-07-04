@@ -9,6 +9,7 @@ import type {
 import { subscriptionBillingState } from '@salon/shared';
 import { type Model, Types } from 'mongoose';
 import { RequestContextService } from '../common/context/request-context.service.js';
+import { CustomerRepository } from '../customers/customer.repository.js';
 import { SalesService } from '../pos/sales.service.js';
 import type { SaleDocument } from '../pos/schemas/sale.schema.js';
 import {
@@ -24,6 +25,7 @@ export class SubscriptionsService {
     @InjectModel(CustomerSubscription.name)
     private readonly subscriptions: Model<CustomerSubscriptionDocument>,
     private readonly sales: SalesService,
+    private readonly customers: CustomerRepository,
     private readonly ctx: RequestContextService,
   ) {}
 
@@ -59,6 +61,7 @@ export class SubscriptionsService {
     const tenantId = this.tenantId();
     const plan = await this.plans.findOne({ _id: new Types.ObjectId(planId), tenantId, deletedAt: null }).exec();
     if (!plan || !plan.active) throw new BadRequestException('unknown or inactive subscription plan');
+    if (!(await this.customers.findById(customerId))) throw new BadRequestException('unknown customer');
 
     const now = new Date();
     const nextBillingDate = new Date(now.getTime() + plan.billingPeriodDays * 86_400_000);
@@ -113,7 +116,7 @@ export class SubscriptionsService {
     if (!sub) throw new NotFoundException('subscription not found');
     if (sub.status !== 'active') throw new BadRequestException('cannot renew a cancelled subscription');
 
-    const sale = await this.sales.checkout(
+    const { sale, wasReplayed } = await this.sales.checkout(
       {
         customerId: String(sub.customerId),
         lines: [{ kind: 'subscription', refId: String(sub.planId), quantity: 1, discount: 0 }],
@@ -121,13 +124,20 @@ export class SubscriptionsService {
         payments,
       },
       idempotencyKey,
+      { allowSubscriptionLines: true },
     );
 
-    sub.currentPeriodStart = sub.nextBillingDate;
-    sub.nextBillingDate = new Date(
-      sub.nextBillingDate.getTime() + (await this.planBillingDays(sub.planId, tenantId)) * 86_400_000,
-    );
-    await sub.save();
+    // A replayed checkout (same idempotency key, or a concurrent double-submit
+    // that lost checkout's own race) must NOT advance the billing period a
+    // second time for one payment — checkout() itself is the single source of
+    // truth for "did this request actually create a new sale".
+    if (!wasReplayed) {
+      sub.currentPeriodStart = sub.nextBillingDate;
+      sub.nextBillingDate = new Date(
+        sub.nextBillingDate.getTime() + (await this.planBillingDays(sub.planId, tenantId)) * 86_400_000,
+      );
+      await sub.save();
+    }
     return { subscription: sub, sale };
   }
 

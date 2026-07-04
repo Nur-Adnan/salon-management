@@ -1,7 +1,8 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { type Model, Types } from 'mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
+import { type Connection, type Model, Types } from 'mongoose';
 import { RequestContextService } from '../common/context/request-context.service.js';
+import { CustomerRepository } from '../customers/customer.repository.js';
 import { creditLoyalty, debitLoyalty } from './ledger.util.js';
 import { LoyaltyAccount, type LoyaltyAccountDocument } from './schemas/loyalty-account.schema.js';
 import { LoyaltyLedgerEntry, type LoyaltyLedgerEntryDocument } from './schemas/loyalty-ledger-entry.schema.js';
@@ -9,8 +10,10 @@ import { LoyaltyLedgerEntry, type LoyaltyLedgerEntryDocument } from './schemas/l
 @Injectable()
 export class LoyaltyService {
   constructor(
+    @InjectConnection() private readonly conn: Connection,
     @InjectModel(LoyaltyAccount.name) private readonly accounts: Model<LoyaltyAccountDocument>,
     @InjectModel(LoyaltyLedgerEntry.name) private readonly ledger: Model<LoyaltyLedgerEntryDocument>,
+    private readonly customers: CustomerRepository,
     private readonly ctx: RequestContextService,
   ) {}
 
@@ -36,21 +39,36 @@ export class LoyaltyService {
   }
 
   // Manual goodwill credit/debit by staff. Debits still cannot go negative.
+  // The balance $inc and its ledger entry commit in one transaction — the
+  // account's cache and its audit trail must never be able to diverge.
   async adjust(customerId: string, points: number, note?: string): Promise<LoyaltyAccountDocument> {
+    if (!(await this.customers.findById(customerId))) throw new BadRequestException('unknown customer');
     const tenantId = this.tenantId();
     const custId = new Types.ObjectId(customerId);
     const m = { accounts: this.accounts, ledger: this.ledger };
-    if (points > 0) {
-      return creditLoyalty(m, { tenantId, customerId: custId, points, type: 'adjust', note });
+
+    const session = await this.conn.startSession();
+    try {
+      const result: { account: LoyaltyAccountDocument | null } = { account: null };
+      await session.withTransaction(async () => {
+        if (points > 0) {
+          result.account = await creditLoyalty(
+            m,
+            { tenantId, customerId: custId, points, type: 'adjust', note },
+            session,
+          );
+          return;
+        }
+        result.account = await debitLoyalty(
+          m,
+          { tenantId, customerId: custId, points: -points, type: 'adjust', note },
+          session,
+        );
+        if (!result.account) throw new BadRequestException('insufficient loyalty balance for this adjustment');
+      });
+      return result.account as LoyaltyAccountDocument;
+    } finally {
+      await session.endSession();
     }
-    const result = await debitLoyalty(m, {
-      tenantId,
-      customerId: custId,
-      points: -points,
-      type: 'adjust',
-      note,
-    });
-    if (!result) throw new BadRequestException('insufficient loyalty balance for this adjustment');
-    return result;
   }
 }
