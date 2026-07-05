@@ -383,6 +383,63 @@ export const renewSubscriptionSchema = z.object({
 });
 export type RenewSubscription = z.infer<typeof renewSubscriptionSchema>;
 
+// --- Phase 6: Staff & HR ---
+
+// All three rates default to 0 (= "not configured yet"), so a staff member
+// with no compensation profile earns nothing rather than erroring — see
+// StaffCompensation in the API layer for the lazy-upsert-on-first-PATCH.
+export const setCompensationSchema = z.object({
+  commissionRateBps: z.number().int().min(0).max(10000).optional(),
+  baseSalaryMinor: z.number().int().nonnegative().optional(),
+  hourlyRateMinor: z.number().int().nonnegative().optional(),
+  note: z.string().trim().max(300).nullable().optional(),
+});
+export type SetCompensation = z.infer<typeof setCompensationSchema>;
+
+// staffId omitted = clock the caller themself in/out; an explicit staffId
+// requires 'manage' on Attendance (front-desk clocking someone else in).
+export const clockInSchema = z.object({
+  staffId: objectIdSchema.optional(),
+  note: z.string().trim().max(300).optional(),
+});
+export type ClockIn = z.infer<typeof clockInSchema>;
+
+export const clockOutSchema = z.object({
+  staffId: objectIdSchema.optional(),
+});
+export type ClockOut = z.infer<typeof clockOutSchema>;
+
+// Manager correction of an existing (not yet payroll-claimed) shift.
+export const updateAttendanceSchema = z.object({
+  clockIn: isoInstant.optional(),
+  clockOut: isoInstant.nullable().optional(),
+});
+export type UpdateAttendance = z.infer<typeof updateAttendanceSchema>;
+
+export const payrollAdjustmentSchema = z.object({
+  label: z.string().trim().min(1).max(100),
+  amountMinor: z.number().int(), // signed: a bonus is positive, a deduction negative
+  note: z.string().trim().max(300).optional(),
+});
+
+export const runPayrollSchema = z
+  .object({
+    staffId: objectIdSchema,
+    periodStart: isoInstant,
+    periodEnd: isoInstant,
+    adjustments: z.array(payrollAdjustmentSchema).default([]),
+  })
+  .refine((r) => Date.parse(r.periodEnd) > Date.parse(r.periodStart), {
+    message: 'periodEnd must be after periodStart',
+    path: ['periodEnd'],
+  });
+export type RunPayroll = z.infer<typeof runPayrollSchema>;
+
+export const markPayslipPaidSchema = z.object({
+  disbursementNote: z.string().trim().max(300).optional(),
+});
+export type MarkPayslipPaid = z.infer<typeof markPayslipPaidSchema>;
+
 // Sample contract used by the Phase-0 end-to-end ping (admin form -> api).
 // Replaced by real domain schemas from Phase 1 onward.
 export const pingRequestSchema = z.object({

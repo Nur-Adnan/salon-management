@@ -33,6 +33,8 @@ import { GiftCardLedgerEntry, type GiftCardLedgerEntryDocument } from '../crm/sc
 import { LoyaltyAccount, type LoyaltyAccountDocument } from '../crm/schemas/loyalty-account.schema.js';
 import { LoyaltyLedgerEntry, type LoyaltyLedgerEntryDocument } from '../crm/schemas/loyalty-ledger-entry.schema.js';
 import { SubscriptionPlan, type SubscriptionPlanDocument } from '../crm/schemas/subscription-plan.schema.js';
+import { reverseStaffEarningsForSale } from '../hr/ledger.util.js';
+import { StaffEarningEntry, type StaffEarningEntryDocument } from '../hr/schemas/staff-earning-entry.schema.js';
 import { Branch, type BranchDocument } from '../iam/schemas/branch.schema.js';
 import { Membership, type MembershipDocument } from '../iam/schemas/membership.schema.js';
 import { Customer, type CustomerDocument } from '../customers/customer.schema.js';
@@ -85,6 +87,7 @@ export class SalesService {
     @InjectModel(GiftCardLedgerEntry.name) private readonly giftCardLedger: Model<GiftCardLedgerEntryDocument>,
     @InjectModel(LoyaltyAccount.name) private readonly loyaltyAccounts: Model<LoyaltyAccountDocument>,
     @InjectModel(LoyaltyLedgerEntry.name) private readonly loyaltyLedger: Model<LoyaltyLedgerEntryDocument>,
+    @InjectModel(StaffEarningEntry.name) private readonly staffEarnings: Model<StaffEarningEntryDocument>,
     private readonly ctx: RequestContextService,
     private readonly gateway: PaymentGateway,
     private readonly eventBus: EventBus,
@@ -406,6 +409,11 @@ export class SalesService {
             { session },
           );
         }
+
+        // Commission/tip clawback: synchronous, not via the async SaleVoided
+        // event — see hr/ledger.util.ts for why a dropped clawback (unlike a
+        // delayed earn) isn't self-correcting.
+        await reverseStaffEarningsForSale(this.staffEarnings, { tenantId, saleId: before._id }, session);
 
         // Flip every captured payment to 'reversed' in one atomic array update —
         // no in-memory reconstruction of the payments array to save.

@@ -68,6 +68,21 @@ export async function inviteMember(formData: FormData): Promise<void> {
   revalidatePath('/team');
 }
 
+export async function setCompensation(userId: string, formData: FormData): Promise<void> {
+  const commissionPercent = Number.parseFloat(String(formData.get('commissionPercent') ?? '')) || 0;
+  const baseSalaryBdt = Number.parseFloat(String(formData.get('baseSalaryBdt') ?? '')) || 0;
+  const hourlyRateBdt = Number.parseFloat(String(formData.get('hourlyRateBdt') ?? '')) || 0;
+  await apiFetch(`/staff/${userId}/compensation`, {
+    method: 'PATCH',
+    body: JSON.stringify({
+      commissionRateBps: Math.round(commissionPercent * 100),
+      baseSalaryMinor: Math.round(baseSalaryBdt * 100),
+      hourlyRateMinor: Math.round(hourlyRateBdt * 100),
+    }),
+  });
+  revalidatePath('/team');
+}
+
 export async function signOut(): Promise<void> {
   const supabase = await createClient();
   await supabase.auth.signOut();

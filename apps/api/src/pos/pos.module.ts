@@ -11,6 +11,7 @@ import { LoyaltyAccount, LoyaltyAccountSchema } from '../crm/schemas/loyalty-acc
 import { LoyaltyLedgerEntry, LoyaltyLedgerEntrySchema } from '../crm/schemas/loyalty-ledger-entry.schema.js';
 import { SubscriptionPlan, SubscriptionPlanSchema } from '../crm/schemas/subscription-plan.schema.js';
 import { Customer, CustomerSchema } from '../customers/customer.schema.js';
+import { StaffEarningEntry, StaffEarningEntrySchema } from '../hr/schemas/staff-earning-entry.schema.js';
 import { Branch, BranchSchema } from '../iam/schemas/branch.schema.js';
 import { Membership, MembershipSchema } from '../iam/schemas/membership.schema.js';
 import { Appointment, AppointmentSchema } from '../scheduling/schemas/appointment.schema.js';
@@ -47,6 +48,10 @@ import { StockLevel, StockLevelSchema } from './schemas/stock-level.schema.js';
       { name: LoyaltyLedgerEntry.name, schema: LoyaltyLedgerEntrySchema },
       { name: Coupon.name, schema: CouponSchema },
       { name: SubscriptionPlan.name, schema: SubscriptionPlanSchema },
+      // Phase 6 HR: voidSale() reverses commission/tip entries synchronously
+      // in its own transaction (see hr/ledger.util.ts) — same "redeem/claim
+      // directly, no circular module import" convention as the CRM models above.
+      { name: StaffEarningEntry.name, schema: StaffEarningEntrySchema },
     ]),
   ],
   controllers: [SalesController, InventoryController],

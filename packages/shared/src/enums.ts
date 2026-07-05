@@ -144,6 +144,18 @@ export const SUBJECTS = [
   'GiftCard',
   'Coupon',
   'Subscription',
+  'Staff',
+  'Attendance',
+  'Payroll',
   'all',
 ] as const;
 export type Subject = (typeof SUBJECTS)[number];
+
+// --- Phase 6: Staff & HR ---
+
+// A staff earning entry is either commission (a rate applied to their
+// attributed net sale-line revenue) or a pro-rata share of a sale's tip.
+// Both are claimed by the same payroll run, so they share one ledger — see
+// StaffEarningEntry.
+export const STAFF_EARNING_KINDS = ['commission', 'tip'] as const;
+export type StaffEarningKind = (typeof STAFF_EARNING_KINDS)[number];

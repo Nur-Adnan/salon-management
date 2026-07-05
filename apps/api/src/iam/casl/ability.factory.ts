@@ -30,9 +30,13 @@ export function abilityForRole(role: Role | undefined, hasTenant: boolean): AppA
         can('manage', 'Subscription');
         can('manage', 'Membership'); // invite/manage staff
         can('read', 'User');
+        can('manage', 'Staff'); // set compensation profiles
+        can('manage', 'Attendance');
+        can('manage', 'Payroll');
         break;
       case 'accountant':
         can('read', 'all');
+        can('manage', 'Payroll'); // processes payroll runs, but doesn't set pay rates (Staff stays read-only via read('all'))
         break;
       case 'receptionist':
         can('read', 'Organization');
@@ -48,6 +52,7 @@ export function abilityForRole(role: Role | undefined, hasTenant: boolean): AppA
         can('read', 'Loyalty');
         can('read', 'Coupon');
         can('read', 'Treatment');
+        can('manage', 'Attendance'); // front-desk clock terminal for everyone
         break;
       case 'stylist':
         can('read', 'Branch');
@@ -56,9 +61,14 @@ export function abilityForRole(role: Role | undefined, hasTenant: boolean): AppA
         can('read', 'Customer');
         can('read', 'Appointment');
         can('update', 'Appointment'); // check-in / start / complete their own work
-        can('read', 'Sale'); // see their attributed sales (commission in Phase 6)
+        can('read', 'Sale'); // see their attributed sales
         can('manage', 'Treatment'); // they log color formulas, notes, photos
         can('read', 'Loyalty'); // check a customer's points balance during service
+        can('read', 'Staff'); // their own compensation profile (service layer scopes to self)
+        can('create', 'Attendance'); // self clock-in
+        can('update', 'Attendance'); // self clock-out
+        can('read', 'Attendance'); // their own attendance history (service layer scopes to self)
+        can('read', 'Payroll'); // their own earnings/payslips (service layer scopes to self)
         break;
       case 'read_only':
         can('read', 'all');

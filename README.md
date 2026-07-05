@@ -6,15 +6,17 @@ Next.js App Router apps, MongoDB, Redis, Turborepo. Built phases:
 **Phase 1 — Identity, Access, Tenancy** (`docs/phase-1.md`),
 **Phase 2 — Service & Product Catalog** (`docs/phase-2.md`),
 **Phase 3 — Scheduling & Calendar** (`docs/phase-3.md`),
-**Phase 4 — POS & Billing** (`docs/phase-4.md`), and
-**Phase 5 — CRM** (`docs/phase-5.md`).
+**Phase 4 — POS & Billing** (`docs/phase-4.md`),
+**Phase 5 — CRM** (`docs/phase-5.md`), and
+**Phase 6 — Staff & HR** (`docs/phase-6.md`).
 
 Scheduling and POS require a MongoDB **replica set** — transactions power the
 double-booking guarantee, idempotent checkout (sale + stock decrement are
-all-or-nothing), and every loyalty/gift-card/coupon balance change (always an
-atomic, non-negative-guaranteed `findOneAndUpdate`, never read-then-write);
-`pnpm infra:up` provisions a single-node one. All money is integer minor units
-(poisha), computed server-side; checkout is idempotent by `Idempotency-Key`.
+all-or-nothing), every loyalty/gift-card/coupon balance change, and every
+staff commission/tip/payroll claim (all always an atomic, non-negative-
+guaranteed `findOneAndUpdate`, never read-then-write); `pnpm infra:up`
+provisions a single-node one. All money is integer minor units (poisha),
+computed server-side; checkout is idempotent by `Idempotency-Key`.
 
 Auth uses Supabase as the identity provider only; the admin app needs
 `NEXT_PUBLIC_SUPABASE_URL` / `NEXT_PUBLIC_SUPABASE_ANON_KEY` to run a live login.

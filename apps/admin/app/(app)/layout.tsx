@@ -31,6 +31,8 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             <Link href="/catalog/products">Products</Link>
             <Link href="/catalog/packages">Packages</Link>
             <Link href="/team">Team</Link>
+            <Link href="/attendance">Attendance</Link>
+            <Link href="/payroll">Payroll</Link>
           </nav>
         </div>
         <div className="flex items-center gap-3">
