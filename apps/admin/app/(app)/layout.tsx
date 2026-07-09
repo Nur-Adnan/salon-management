@@ -30,6 +30,9 @@ export default async function AppLayout({ children }: { children: ReactNode }) {
             <Link href="/catalog/services">Services</Link>
             <Link href="/catalog/products">Products</Link>
             <Link href="/catalog/packages">Packages</Link>
+            <Link href="/inventory">Inventory</Link>
+            <Link href="/suppliers">Suppliers</Link>
+            <Link href="/purchase-orders">Purchase Orders</Link>
             <Link href="/team">Team</Link>
             <Link href="/attendance">Attendance</Link>
             <Link href="/payroll">Payroll</Link>
