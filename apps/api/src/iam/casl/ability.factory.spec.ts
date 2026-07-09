@@ -33,6 +33,28 @@ describe('abilityForRole', () => {
     expect(a.can('create', 'Resource')).toBe(false);
   });
 
+  it('Phase 7: manager manages Inventory + Supplier; stylist/receptionist read Inventory but not Supplier', () => {
+    const manager = abilityForRole('manager', true);
+    expect(manager.can('manage', 'Inventory')).toBe(true);
+    expect(manager.can('manage', 'Supplier')).toBe(true);
+
+    const stylist = abilityForRole('stylist', true);
+    expect(stylist.can('read', 'Inventory')).toBe(true);
+    expect(stylist.can('update', 'Inventory')).toBe(false);
+    expect(stylist.can('read', 'Supplier')).toBe(false);
+
+    const receptionist = abilityForRole('receptionist', true);
+    expect(receptionist.can('read', 'Inventory')).toBe(true);
+    expect(receptionist.can('update', 'Inventory')).toBe(false);
+    expect(receptionist.can('read', 'Supplier')).toBe(false);
+
+    // accountant reads everything (incl. Supplier/PO for cost) but cannot mutate stock
+    const accountant = abilityForRole('accountant', true);
+    expect(accountant.can('read', 'Supplier')).toBe(true);
+    expect(accountant.can('read', 'Inventory')).toBe(true);
+    expect(accountant.can('update', 'Inventory')).toBe(false);
+  });
+
   it('no role or no active tenant => no abilities', () => {
     expect(abilityForRole(undefined, false).can('read', 'Resource')).toBe(false);
     expect(abilityForRole('owner', false).can('read', 'Resource')).toBe(false);

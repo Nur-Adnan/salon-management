@@ -25,6 +25,7 @@ import { HealthModule } from './health/health.module.js';
 import { PingModule } from './ping/ping.module.js';
 import { QueueModule } from './queue/queue.module.js';
 import { ResourcesModule } from './resources/resources.module.js';
+import { SuppliersModule } from './suppliers/suppliers.module.js';
 import { RedisModule } from './infra/redis/redis.module.js';
 
 @Module({
@@ -75,6 +76,7 @@ import { RedisModule } from './infra/redis/redis.module.js';
     CrmModule,
     HrModule,
     InventoryModule,
+    SuppliersModule,
     HealthModule,
     PingModule,
   ],

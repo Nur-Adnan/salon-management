@@ -33,6 +33,8 @@ export function abilityForRole(role: Role | undefined, hasTenant: boolean): AppA
         can('manage', 'Staff'); // set compensation profiles
         can('manage', 'Attendance');
         can('manage', 'Payroll');
+        can('manage', 'Inventory'); // stock, adjustments, reorder
+        can('manage', 'Supplier'); // suppliers + purchase orders (procurement)
         break;
       case 'accountant':
         can('read', 'all');
@@ -53,6 +55,7 @@ export function abilityForRole(role: Role | undefined, hasTenant: boolean): AppA
         can('read', 'Coupon');
         can('read', 'Treatment');
         can('manage', 'Attendance'); // front-desk clock terminal for everyone
+        can('read', 'Inventory'); // see on-hand stock while ringing up
         break;
       case 'stylist':
         can('read', 'Branch');
@@ -69,6 +72,7 @@ export function abilityForRole(role: Role | undefined, hasTenant: boolean): AppA
         can('update', 'Attendance'); // self clock-out
         can('read', 'Attendance'); // their own attendance history (service layer scopes to self)
         can('read', 'Payroll'); // their own earnings/payslips (service layer scopes to self)
+        can('read', 'Inventory'); // check whether a retail product is in stock
         break;
       case 'read_only':
         can('read', 'all');
