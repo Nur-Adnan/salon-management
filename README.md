@@ -8,8 +8,9 @@ Next.js App Router apps, MongoDB, Redis, Turborepo. Built phases:
 **Phase 3 — Scheduling & Calendar** (`docs/phase-3.md`),
 **Phase 4 — POS & Billing** (`docs/phase-4.md`),
 **Phase 5 — CRM** (`docs/phase-5.md`),
-**Phase 6 — Staff & HR** (`docs/phase-6.md`), and
-**Phase 7 — Inventory & Suppliers** (`docs/phase-7.md`).
+**Phase 6 — Staff & HR** (`docs/phase-6.md`),
+**Phase 7 — Inventory & Suppliers** (`docs/phase-7.md`), and
+**Phase 8 — Reporting & Analytics** (`docs/phase-8.md`).
 A codebase-wide hardening pass (`docs/hardening-phase-0-6.md`) fixed 14
 adversarial-review findings before Phase 7.
 

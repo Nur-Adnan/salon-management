@@ -16,6 +16,30 @@ import { Appointment, type AppointmentDocument } from '../scheduling/schemas/app
 import { dayRangeUtc } from '../scheduling/time.util.js';
 import { PurchaseOrder, type PurchaseOrderDocument } from '../suppliers/schemas/purchase-order.schema.js';
 
+// Raw aggregation result shapes (used only to type each `aggregate<T>()` call).
+interface BucketRaw { _id: string; gross: number; discounts: number; tax: number; tips: number; total: number; count: number }
+interface SalesFacet {
+  buckets: BucketRaw[];
+  byPaymentMethod: { _id: string; amount: number }[];
+  byLineKind: { _id: string; net: number }[];
+}
+interface EarningRaw { _id: { staffId: Types.ObjectId; kind: string }; amt: number }
+interface AttributedRaw { _id: Types.ObjectId; net: number; sales: Types.ObjectId[] }
+interface HoursRaw { _id: Types.ObjectId; ms: number }
+interface InvItemRaw { productId: Types.ObjectId; name: unknown; qtyOnHand: number; reorderPoint: number; unitCost: number; value: number }
+interface PoSpendRaw { _id: Types.ObjectId; spend: number }
+interface StatusCountRaw { _id: string; count: number }
+interface SumRaw { _id: null; pts?: number; bal?: number; dueBalance?: number }
+
+interface StaffRow {
+  staffId: string;
+  netAttributed: number;
+  commission: number;
+  tips: number;
+  hoursWorked: number;
+  saleCount: number;
+}
+
 // Read-only analytics. Every method is an on-demand aggregation over existing
 // collections — no writes, no materialized rollups. Branch-scoped, except
 // crmLiabilities (loyalty/gift-card/subscription balances aren't branch-partitioned).
@@ -60,7 +84,7 @@ export class ReportsService {
     const { start, end } = this.range(from, to, tz);
     const fmt = groupBy === 'month' ? '%Y-%m' : groupBy === 'week' ? '%G-W%V' : '%Y-%m-%d';
 
-    const [res] = await this.sales.aggregate([
+    const [res] = await this.sales.aggregate<SalesFacet>([
       { $match: { tenantId, branchId, status: 'completed', deletedAt: null, createdAt: { $gte: start, $lte: end } } },
       {
         $facet: {
@@ -91,8 +115,8 @@ export class ReportsService {
       },
     ]);
 
-    const buckets = ((res?.buckets ?? []) as any[]).map((b) => ({
-      key: b._id as string,
+    const buckets = (res?.buckets ?? []).map((b) => ({
+      key: b._id,
       gross: b.gross,
       discounts: b.discounts,
       net: b.gross - b.discounts,
@@ -116,23 +140,23 @@ export class ReportsService {
     return {
       groupBy,
       buckets,
-      byPaymentMethod: ((res?.byPaymentMethod ?? []) as any[]).map((p) => ({ method: p._id, amount: p.amount })),
-      byLineKind: ((res?.byLineKind ?? []) as any[]).map((l) => ({ kind: l._id, net: l.net })),
+      byPaymentMethod: (res?.byPaymentMethod ?? []).map((p) => ({ method: p._id, amount: p.amount })),
+      byLineKind: (res?.byLineKind ?? []).map((l) => ({ kind: l._id, net: l.net })),
       totals,
     };
   }
 
-  async staffPerformance(from: string | undefined, to: string | undefined) {
+  async staffPerformance(from: string | undefined, to: string | undefined): Promise<StaffRow[]> {
     const { tenantId, branchId } = this.scope();
     const tz = await this.branchTz(tenantId, branchId);
     const { start, end } = this.range(from, to, tz);
     const inRange = { $gte: start, $lte: end };
 
-    const earnings = (await this.staffEarnings.aggregate([
+    const earnings = await this.staffEarnings.aggregate<EarningRaw>([
       { $match: { tenantId, branchId, createdAt: inRange } },
       { $group: { _id: { staffId: '$staffId', kind: '$kind' }, amt: { $sum: '$amountMinor' } } },
-    ])) as any[];
-    const attributed = (await this.sales.aggregate([
+    ]);
+    const attributed = await this.sales.aggregate<AttributedRaw>([
       { $match: { tenantId, branchId, status: 'completed', deletedAt: null, createdAt: inRange } },
       { $unwind: '$lines' },
       { $match: { 'lines.staffId': { $ne: null } } },
@@ -143,16 +167,19 @@ export class ReportsService {
           sales: { $addToSet: '$_id' },
         },
       },
-    ])) as any[];
-    const hours = (await this.attendance.aggregate([
+    ]);
+    const hours = await this.attendance.aggregate<HoursRaw>([
       { $match: { tenantId, branchId, clockOut: { $ne: null }, clockIn: inRange } },
       { $group: { _id: '$staffId', ms: { $sum: { $subtract: ['$clockOut', '$clockIn'] } } } },
-    ])) as any[];
+    ]);
 
-    const rows = new Map<string, { staffId: string; netAttributed: number; commission: number; tips: number; hoursWorked: number; saleCount: number }>();
-    const get = (id: string) => {
+    const rows = new Map<string, StaffRow>();
+    const get = (id: string): StaffRow => {
       let r = rows.get(id);
-      if (!r) { r = { staffId: id, netAttributed: 0, commission: 0, tips: 0, hoursWorked: 0, saleCount: 0 }; rows.set(id, r); }
+      if (!r) {
+        r = { staffId: id, netAttributed: 0, commission: 0, tips: 0, hoursWorked: 0, saleCount: 0 };
+        rows.set(id, r);
+      }
       return r;
     };
     for (const e of earnings) {
@@ -163,7 +190,7 @@ export class ReportsService {
     for (const a of attributed) {
       const r = get(String(a._id));
       r.netAttributed += a.net;
-      r.saleCount += (a.sales as unknown[]).length;
+      r.saleCount += a.sales.length;
     }
     for (const h of hours) {
       const r = get(String(h._id));
@@ -177,7 +204,7 @@ export class ReportsService {
     const tz = await this.branchTz(tenantId, branchId);
     const { start, end } = this.range(from, to, tz);
 
-    const items = (await this.stock.aggregate([
+    const items = await this.stock.aggregate<InvItemRaw>([
       { $match: { tenantId, branchId } },
       {
         $lookup: {
@@ -199,14 +226,14 @@ export class ReportsService {
           value: { $multiply: ['$qtyOnHand', '$product.cost.amount'] },
         },
       },
-    ])) as any[];
+    ]);
     const totalValue = items.reduce((n, i) => n + i.value, 0);
     const lowStockCount = items.filter((i) => i.reorderPoint > 0 && i.qtyOnHand <= i.reorderPoint).length;
 
-    const poSpend = (await this.purchaseOrders.aggregate([
+    const poSpend = await this.purchaseOrders.aggregate<PoSpendRaw>([
       { $match: { tenantId, branchId, status: 'received', receivedAt: { $gte: start, $lte: end } } },
       { $group: { _id: '$supplierId', spend: { $sum: '$totalCost.amount' } } },
-    ])) as any[];
+    ]);
 
     return {
       items: items.map((i) => ({ ...i, productId: String(i.productId) })),
@@ -221,10 +248,10 @@ export class ReportsService {
     const tz = await this.branchTz(tenantId, branchId);
     const { start, end } = this.range(from, to, tz);
 
-    const rows = (await this.appts.aggregate([
+    const rows = await this.appts.aggregate<StatusCountRaw>([
       { $match: { tenantId, branchId, deletedAt: null, 'lines.start': { $gte: start, $lte: end } } },
       { $group: { _id: '$status', count: { $sum: 1 } } },
-    ])) as any[];
+    ]);
 
     const byStatus: Record<string, number> = {};
     let total = 0;
@@ -248,16 +275,16 @@ export class ReportsService {
 
   async crmLiabilities() {
     const { tenantId } = this.scope(); // tenant-wide: these balances aren't branch-partitioned
-    const [loy] = (await this.loyaltyAccounts.aggregate([
+    const [loy] = await this.loyaltyAccounts.aggregate<SumRaw>([
       { $match: { tenantId } },
       { $group: { _id: null, pts: { $sum: '$balance' } } },
-    ])) as any[];
-    const [gc] = (await this.giftCards.aggregate([
+    ]);
+    const [gc] = await this.giftCards.aggregate<SumRaw>([
       { $match: { tenantId, status: 'active' } },
       { $group: { _id: null, bal: { $sum: '$balance.amount' } } },
-    ])) as any[];
+    ]);
     const activeSubscriptions = await this.subscriptions.countDocuments({ tenantId, status: 'active' }).exec();
-    const [due] = (await this.sales.aggregate([
+    const [due] = await this.sales.aggregate<SumRaw>([
       { $match: { tenantId, status: 'completed', deletedAt: null } },
       {
         $project: {
@@ -286,7 +313,7 @@ export class ReportsService {
         },
       },
       { $group: { _id: null, dueBalance: { $sum: '$owed' } } },
-    ])) as any[];
+    ]);
 
     const pts = loy?.pts ?? 0;
     return {
