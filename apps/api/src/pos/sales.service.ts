@@ -42,6 +42,8 @@ import { LoyaltyLedgerEntry, type LoyaltyLedgerEntryDocument } from '../crm/sche
 import { SubscriptionPlan, type SubscriptionPlanDocument } from '../crm/schemas/subscription-plan.schema.js';
 import { reverseStaffEarningsForSale } from '../hr/ledger.util.js';
 import { StaffEarningEntry, type StaffEarningEntryDocument } from '../hr/schemas/staff-earning-entry.schema.js';
+import { StockMovement, type StockMovementDocument } from '../inventory/schemas/stock-movement.schema.js';
+import { applyStockDelta } from '../inventory/stock.util.js';
 import { Branch, type BranchDocument } from '../iam/schemas/branch.schema.js';
 import { Membership, type MembershipDocument } from '../iam/schemas/membership.schema.js';
 import { Customer, type CustomerDocument } from '../customers/customer.schema.js';
@@ -80,6 +82,7 @@ export class SalesService {
     @InjectConnection() private readonly conn: Connection,
     @InjectModel(Sale.name) private readonly sales: Model<SaleDocument>,
     @InjectModel(StockLevel.name) private readonly stock: Model<StockLevelDocument>,
+    @InjectModel(StockMovement.name) private readonly movements: Model<StockMovementDocument>,
     @InjectModel(Counter.name) private readonly counters: Model<CounterDocument>,
     @InjectModel(Service.name) private readonly services: Model<ServiceDocument>,
     @InjectModel(Product.name) private readonly products: Model<ProductDocument>,
@@ -228,30 +231,24 @@ export class SalesService {
           { session },
         );
 
+        // Every stock change flows through applyStockDelta: a guarded decrement
+        // (never negative; tracked-but-insufficient throws 409; untracked is a
+        // no-op) PLUS a StockMovement (reason 'sale') in this same transaction —
+        // one movement per product (productQtys is already aggregated by product).
         for (const [productId, qty] of productQtys) {
-          const pid = new Types.ObjectId(productId);
-          // Guard the decrement in the FILTER (invariant #2: stock is never
-          // allowed to go negative), exactly like the loyalty/gift-card debits.
-          // A no-match means one of two things, disambiguated below.
-          const res = await this.stock
-            .updateOne(
-              { tenantId, branchId, productId: pid, qtyOnHand: { $gte: qty } },
-              { $inc: { qtyOnHand: -qty } },
-              { session },
-            )
-            .exec();
-          if (res.matchedCount === 0) {
-            const tracked = await this.stock
-              .findOne({ tenantId, branchId, productId: pid })
-              .session(session)
-              .exec();
-            // A tracked product with insufficient on-hand must block the sale;
-            // an untracked product (no stock row at all) is not inventory-managed
-            // and stays sellable — preserving prior behavior for un-stocked items.
-            // ponytail: block oversell on tracked rows; Phase 7 can add a
-            // per-branch "allow backorder" toggle if a business ever needs it.
-            if (tracked) throw new ConflictException(`insufficient stock for product ${productId}`);
-          }
+          await applyStockDelta(
+            { stock: this.stock, movements: this.movements },
+            {
+              tenantId,
+              branchId,
+              productId: new Types.ObjectId(productId),
+              qtyDelta: -qty,
+              reason: 'sale',
+              refType: 'sale',
+              refId: saleId,
+            },
+            session,
+          );
         }
 
         // Only claim a redemption slot if the coupon actually changed anything —
@@ -359,15 +356,31 @@ export class SalesService {
           throw new BadRequestException('sale is already voided');
         }
 
+        // Restore stock + record a 'void' movement per product. Aggregate by
+        // product first (a sale can list the same product on two lines) so there
+        // is exactly one movement per product — keeping the movement idempotency
+        // index valid. createIfMissing:false so a product that was untracked at
+        // sale time is not resurrected into inventory by the void.
+        const restoreByProduct = new Map<string, number>();
         for (const l of before.lines) {
           if (l.kind !== 'product') continue;
-          await this.stock
-            .updateOne(
-              { tenantId, branchId, productId: l.refId },
-              { $inc: { qtyOnHand: l.quantity } },
-              { session },
-            )
-            .exec();
+          restoreByProduct.set(String(l.refId), (restoreByProduct.get(String(l.refId)) ?? 0) + l.quantity);
+        }
+        for (const [productId, qty] of restoreByProduct) {
+          await applyStockDelta(
+            { stock: this.stock, movements: this.movements },
+            {
+              tenantId,
+              branchId,
+              productId: new Types.ObjectId(productId),
+              qtyDelta: qty,
+              reason: 'void',
+              refType: 'sale',
+              refId: before._id as Types.ObjectId,
+              createIfMissing: false,
+            },
+            session,
+          );
         }
 
         // Gift cards: one reversal per captured gift_card payment (a sale can

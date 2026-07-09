@@ -26,6 +26,10 @@ export interface StockDelta {
   refType: string; // 'sale' | 'purchase_order' | 'adjustment'
   refId: Types.ObjectId;
   note?: string | null;
+  // Increments upsert a stock row by default (PO receipt / adjustment establish
+  // stock). A void restore sets this false so it never resurrects a row for a
+  // product that was untracked at sale time (matching pre-Phase-7 behavior).
+  createIfMissing?: boolean;
 }
 
 /**
@@ -53,7 +57,11 @@ export async function applyStockDelta(m: StockModels, p: StockDelta, session: Cl
       return; // untracked product: not inventory-managed, no movement to record
     }
   } else {
-    await m.stock.updateOne(key, { $inc: { qtyOnHand: p.qtyDelta } }, { upsert: true, session }).exec();
+    const create = p.createIfMissing !== false;
+    const res = await m.stock.updateOne(key, { $inc: { qtyOnHand: p.qtyDelta } }, { upsert: create, session }).exec();
+    // createIfMissing:false on an untracked product (no row) → nothing to restore,
+    // and no movement to record.
+    if (!create && res.matchedCount === 0) return;
   }
 
   try {
