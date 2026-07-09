@@ -35,6 +35,7 @@ export function abilityForRole(role: Role | undefined, hasTenant: boolean): AppA
         can('manage', 'Payroll');
         can('manage', 'Inventory'); // stock, adjustments, reorder
         can('manage', 'Supplier'); // suppliers + purchase orders (procurement)
+        can('read', 'Report'); // dashboards / analytics
         break;
       case 'accountant':
         can('read', 'all');

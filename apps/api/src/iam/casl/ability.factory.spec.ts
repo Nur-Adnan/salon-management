@@ -55,6 +55,16 @@ describe('abilityForRole', () => {
     expect(accountant.can('update', 'Inventory')).toBe(false);
   });
 
+  it('Phase 8: manager + accountant read Report; stylist/receptionist do not; no one but owner writes it', () => {
+    expect(abilityForRole('manager', true).can('read', 'Report')).toBe(true);
+    expect(abilityForRole('manager', true).can('update', 'Report')).toBe(false);
+    expect(abilityForRole('accountant', true).can('read', 'Report')).toBe(true);
+    expect(abilityForRole('read_only', true).can('read', 'Report')).toBe(true);
+    expect(abilityForRole('stylist', true).can('read', 'Report')).toBe(false);
+    expect(abilityForRole('receptionist', true).can('read', 'Report')).toBe(false);
+    expect(abilityForRole('owner', true).can('manage', 'Report')).toBe(true);
+  });
+
   it('no role or no active tenant => no abilities', () => {
     expect(abilityForRole(undefined, false).can('read', 'Resource')).toBe(false);
     expect(abilityForRole('owner', false).can('read', 'Resource')).toBe(false);

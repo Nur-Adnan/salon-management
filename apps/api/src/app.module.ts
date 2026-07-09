@@ -15,6 +15,7 @@ import { CustomersModule } from './customers/customers.module.js';
 import { HrModule } from './hr/hr.module.js';
 import { InventoryModule } from './inventory/inventory.module.js';
 import { PosModule } from './pos/pos.module.js';
+import { ReportsModule } from './reports/reports.module.js';
 import { SchedulingModule } from './scheduling/scheduling.module.js';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
 import { type Env, validateEnv } from './config/env.js';
@@ -77,6 +78,7 @@ import { RedisModule } from './infra/redis/redis.module.js';
     HrModule,
     InventoryModule,
     SuppliersModule,
+    ReportsModule,
     HealthModule,
     PingModule,
   ],
