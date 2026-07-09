@@ -7,8 +7,11 @@ Next.js App Router apps, MongoDB, Redis, Turborepo. Built phases:
 **Phase 2 — Service & Product Catalog** (`docs/phase-2.md`),
 **Phase 3 — Scheduling & Calendar** (`docs/phase-3.md`),
 **Phase 4 — POS & Billing** (`docs/phase-4.md`),
-**Phase 5 — CRM** (`docs/phase-5.md`), and
-**Phase 6 — Staff & HR** (`docs/phase-6.md`).
+**Phase 5 — CRM** (`docs/phase-5.md`),
+**Phase 6 — Staff & HR** (`docs/phase-6.md`), and
+**Phase 7 — Inventory & Suppliers** (`docs/phase-7.md`).
+A codebase-wide hardening pass (`docs/hardening-phase-0-6.md`) fixed 14
+adversarial-review findings before Phase 7.
 
 Scheduling and POS require a MongoDB **replica set** — transactions power the
 double-booking guarantee, idempotent checkout (sale + stock decrement are
