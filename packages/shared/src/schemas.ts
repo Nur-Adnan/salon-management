@@ -11,6 +11,7 @@ import {
   PHOTO_TYPES,
   RESOURCE_TYPES,
   ROLES,
+  REPORT_GROUP_BY,
   SALE_LINE_KINDS,
   STOCK_ADJUSTMENT_REASONS,
 } from './enums.js';
@@ -323,6 +324,21 @@ export const setReorderPointSchema = z.object({
   reorderPoint: z.number().int().nonnegative(),
 });
 export type SetReorderPoint = z.infer<typeof setReorderPointSchema>;
+
+// --- Phase 8: Reporting & Analytics (query params) ---
+
+const reportDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'expected YYYY-MM-DD');
+
+export const reportRangeQuerySchema = z.object({
+  from: reportDate.optional(),
+  to: reportDate.optional(),
+});
+export type ReportRangeQuery = z.infer<typeof reportRangeQuerySchema>;
+
+export const reportSalesQuerySchema = reportRangeQuerySchema.extend({
+  groupBy: z.enum(REPORT_GROUP_BY).default('day'),
+});
+export type ReportSalesQuery = z.infer<typeof reportSalesQuerySchema>;
 
 // --- Phase 5: CRM ---
 

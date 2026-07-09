@@ -149,6 +149,7 @@ export const SUBJECTS = [
   'Payroll',
   'Inventory',
   'Supplier',
+  'Report',
   'all',
 ] as const;
 export type Subject = (typeof SUBJECTS)[number];
@@ -176,3 +177,9 @@ export type PurchaseOrderStatus = (typeof PURCHASE_ORDER_STATUS)[number];
 // Why a manual stock adjustment was made.
 export const STOCK_ADJUSTMENT_REASONS = ['recount', 'wastage', 'damage', 'correction'] as const;
 export type StockAdjustmentReason = (typeof STOCK_ADJUSTMENT_REASONS)[number];
+
+// --- Phase 8: Reporting & Analytics ---
+
+// Time-bucket granularity for the sales report.
+export const REPORT_GROUP_BY = ['day', 'week', 'month'] as const;
+export type ReportGroupBy = (typeof REPORT_GROUP_BY)[number];
