@@ -39,6 +39,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
       .getRequest<Request & { user: SupabaseJwtPayload; context?: RequestContext }>();
 
     const { user, memberships } = await this.provisioning.provisionAndLoad(req.user);
+    // A disabled account must not authenticate even with a valid token — enforce
+    // the User.status flag that provisioning already tracks (otherwise the flag
+    // is inert and reads as a control that isn't actually enforced).
+    if (user.status === 'disabled') throw new UnauthorizedException('account disabled');
     const scope = resolveScope(memberships, header(req, 'x-tenant-id'), header(req, 'x-branch-id'));
 
     const resolved: RequestContext = {

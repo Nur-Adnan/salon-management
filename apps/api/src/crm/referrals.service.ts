@@ -70,14 +70,18 @@ export class ReferralsService {
    * referrer never actually credited, and — since the flip already
    * happened — that referral could never be rewarded on a later retry.
    */
-  async rewardIfPending(tenantId: Types.ObjectId, referredCustomerId: Types.ObjectId): Promise<void> {
+  async rewardIfPending(
+    tenantId: Types.ObjectId,
+    referredCustomerId: Types.ObjectId,
+    triggeringSaleId: Types.ObjectId,
+  ): Promise<void> {
     const session = await this.conn.startSession();
     try {
       await session.withTransaction(async () => {
         const referral = await this.referrals
           .findOneAndUpdate(
             { tenantId, referredCustomerId, status: 'pending' },
-            { $set: { status: 'rewarded', rewardedAt: new Date() } },
+            { $set: { status: 'rewarded', rewardedAt: new Date(), rewardedSaleId: triggeringSaleId } },
             { new: true, session },
           )
           .exec();

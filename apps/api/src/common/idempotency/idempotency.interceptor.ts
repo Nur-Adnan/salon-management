@@ -26,7 +26,11 @@ export class IdempotencyInterceptor implements NestInterceptor {
     if (!key) return next.handle();
 
     const tenantId = (req.headers['x-tenant-id'] as string) ?? 'public';
-    const cacheKey = `idem:${tenantId}:${key}`;
+    // Scope the cache entry to the specific endpoint (controller.handler), so a
+    // client that reuses one Idempotency-Key across different routes can't be
+    // served another route's stored response body.
+    const route = `${context.getClass().name}.${context.getHandler().name}`;
+    const cacheKey = `idem:${tenantId}:${route}:${key}`;
 
     return from(this.redis.get(cacheKey)).pipe(
       catchError(() => of(null)),

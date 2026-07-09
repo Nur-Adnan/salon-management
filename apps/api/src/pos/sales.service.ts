@@ -26,8 +26,15 @@ import { Service, type ServiceDocument } from '../catalog/schemas/service.schema
 import { Package, type PackageDocument } from '../catalog/schemas/package.schema.js';
 import { RequestContextService } from '../common/context/request-context.service.js';
 import { isDuplicateKeyError } from '../common/mongo.util.js';
-import { claimCouponRedemption, debitGiftCard, debitLoyalty } from '../crm/ledger.util.js';
+import {
+  claimCouponRedemption,
+  debitGiftCard,
+  debitLoyalty,
+  reverseLoyaltyEarnForSale,
+  reverseReferralRewardForSale,
+} from '../crm/ledger.util.js';
 import { Coupon, type CouponDocument } from '../crm/schemas/coupon.schema.js';
+import { Referral, type ReferralDocument } from '../crm/schemas/referral.schema.js';
 import { GiftCard, type GiftCardDocument } from '../crm/schemas/gift-card.schema.js';
 import { GiftCardLedgerEntry, type GiftCardLedgerEntryDocument } from '../crm/schemas/gift-card-ledger-entry.schema.js';
 import { LoyaltyAccount, type LoyaltyAccountDocument } from '../crm/schemas/loyalty-account.schema.js';
@@ -87,6 +94,7 @@ export class SalesService {
     @InjectModel(GiftCardLedgerEntry.name) private readonly giftCardLedger: Model<GiftCardLedgerEntryDocument>,
     @InjectModel(LoyaltyAccount.name) private readonly loyaltyAccounts: Model<LoyaltyAccountDocument>,
     @InjectModel(LoyaltyLedgerEntry.name) private readonly loyaltyLedger: Model<LoyaltyLedgerEntryDocument>,
+    @InjectModel(Referral.name) private readonly referrals: Model<ReferralDocument>,
     @InjectModel(StaffEarningEntry.name) private readonly staffEarnings: Model<StaffEarningEntryDocument>,
     private readonly ctx: RequestContextService,
     private readonly gateway: PaymentGateway,
@@ -221,13 +229,29 @@ export class SalesService {
         );
 
         for (const [productId, qty] of productQtys) {
-          await this.stock
+          const pid = new Types.ObjectId(productId);
+          // Guard the decrement in the FILTER (invariant #2: stock is never
+          // allowed to go negative), exactly like the loyalty/gift-card debits.
+          // A no-match means one of two things, disambiguated below.
+          const res = await this.stock
             .updateOne(
-              { tenantId, branchId, productId: new Types.ObjectId(productId) },
+              { tenantId, branchId, productId: pid, qtyOnHand: { $gte: qty } },
               { $inc: { qtyOnHand: -qty } },
               { session },
             )
             .exec();
+          if (res.matchedCount === 0) {
+            const tracked = await this.stock
+              .findOne({ tenantId, branchId, productId: pid })
+              .session(session)
+              .exec();
+            // A tracked product with insufficient on-hand must block the sale;
+            // an untracked product (no stock row at all) is not inventory-managed
+            // and stays sellable — preserving prior behavior for un-stocked items.
+            // ponytail: block oversell on tracked rows; Phase 7 can add a
+            // per-branch "allow backorder" toggle if a business ever needs it.
+            if (tracked) throw new ConflictException(`insufficient stock for product ${productId}`);
+          }
         }
 
         // Only claim a redemption slot if the coupon actually changed anything —
@@ -258,7 +282,7 @@ export class SalesService {
   }
 
   async addPayments(id: string, paymentsIn: PaymentInputDto[], idempotencyKey: string | null): Promise<SaleDocument> {
-    const { tenantId } = this.scope();
+    const { tenantId, branchId } = this.scope();
 
     // A gift-card/loyalty debit and the sale update that records it commit
     // together — the same all-or-nothing guarantee checkout() gives. `sale` is
@@ -269,7 +293,7 @@ export class SalesService {
     try {
       await session.withTransaction(async () => {
         const sale = await this.sales
-          .findOne({ _id: new Types.ObjectId(id), tenantId, deletedAt: null })
+          .findOne({ _id: new Types.ObjectId(id), tenantId, branchId, deletedAt: null })
           .session(session)
           .exec();
         if (!sale) throw new NotFoundException('sale not found');
@@ -409,6 +433,24 @@ export class SalesService {
             { session },
           );
         }
+
+        // Loyalty EARN + referral-reward clawback: synchronous, same asymmetry
+        // as the commission/tip reversal below. The customer's points earned FOR
+        // this sale (and any referral reward its completion triggered) are
+        // credited post-commit by the async SaleCompletedHandler, so — like
+        // commission — they can only be reversed here, inside the void
+        // transaction. A void that beats the earn handler reverses nothing here,
+        // but the handler's sale.status guard then prevents the earn ever landing.
+        await reverseLoyaltyEarnForSale(
+          { accounts: this.loyaltyAccounts, ledger: this.loyaltyLedger },
+          { tenantId, saleId: before._id },
+          session,
+        );
+        await reverseReferralRewardForSale(
+          { referrals: this.referrals, accounts: this.loyaltyAccounts, ledger: this.loyaltyLedger },
+          { tenantId, saleId: before._id },
+          session,
+        );
 
         // Commission/tip clawback: synchronous, not via the async SaleVoided
         // event — see hr/ledger.util.ts for why a dropped clawback (unlike a

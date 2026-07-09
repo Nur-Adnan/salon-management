@@ -32,6 +32,10 @@ export class SaleCompletedHandler implements IEventHandler<SaleCompleted> {
       const tenantId = new Types.ObjectId(event.tenantId);
       const sale = await this.sales.findOne({ _id: new Types.ObjectId(event.saleId), tenantId }).exec();
       if (!sale || !sale.customerId) return; // anonymous walk-in sales don't earn points
+      // A sale voided before this best-effort handler ran must never earn points
+      // (or a referral reward): voidSale's synchronous clawback would find nothing
+      // to reverse, so a late earn on a voided sale would dangle uncorrected.
+      if (sale.status !== 'completed') return;
 
       const netSpend = money(sale.subtotal.amount - sale.discountTotal.amount);
       const points = earnedLoyaltyPoints(netSpend);
@@ -48,7 +52,7 @@ export class SaleCompletedHandler implements IEventHandler<SaleCompleted> {
         );
       }
 
-      await this.referrals.rewardIfPending(tenantId, sale.customerId);
+      await this.referrals.rewardIfPending(tenantId, sale.customerId, sale._id as Types.ObjectId);
     } catch (err) {
       // Best-effort: never let a loyalty/referral hiccup surface to the customer
       // whose sale already committed successfully.

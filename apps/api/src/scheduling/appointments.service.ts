@@ -1,13 +1,14 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { EventBus } from '@nestjs/cqrs';
-import { InjectModel } from '@nestjs/mongoose';
+import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { RELEASING_STATUSES, type AppointmentStatus, canTransition } from '@salon/shared';
-import { type Model, Types } from 'mongoose';
+import { type Connection, type Model, Types } from 'mongoose';
 import { RequestContextService } from '../common/context/request-context.service.js';
 import { Branch, type BranchDocument } from '../iam/schemas/branch.schema.js';
 import { AppointmentCancelled, AppointmentCompleted } from './events.js';
@@ -18,6 +19,7 @@ import { dayRangeUtc } from './time.util.js';
 @Injectable()
 export class AppointmentsService {
   constructor(
+    @InjectConnection() private readonly conn: Connection,
     @InjectModel(Appointment.name) private readonly appts: Model<AppointmentDocument>,
     @InjectModel(SlotReservation.name) private readonly reservations: Model<SlotReservationDocument>,
     @InjectModel(Branch.name) private readonly branches: Model<BranchDocument>,
@@ -59,18 +61,49 @@ export class AppointmentsService {
   }
 
   async transition(id: string, to: AppointmentStatus): Promise<AppointmentDocument> {
-    const appt = await this.get(id);
-    if (!canTransition(appt.status, to)) {
-      throw new BadRequestException(`illegal transition ${appt.status} -> ${to}`);
-    }
-    appt.status = to;
-    await appt.save();
+    const { tenantId, branchId } = this.scope();
+    const _id = new Types.ObjectId(id);
 
-    // Cancelled / no-show / completed free the slots for other bookings.
-    if (RELEASING_STATUSES.includes(to)) {
-      await this.reservations.deleteMany({ appointmentId: appt._id }).exec();
+    // The status flip and the slot-releasing deleteMany must be atomic AND
+    // mutually exclusive with any concurrent transition. Without this, two
+    // legal-from-the-same-source transitions (e.g. checked_in->in_service and
+    // checked_in->cancelled) could both commit last-write-wins, and a releasing
+    // transition's reservation delete could fire while the other left the
+    // appointment active — orphaning the slot and defeating the no-double-book
+    // guarantee. The findOneAndUpdate filters on the EXACT source status we
+    // validated against, so only one transition off a given status can win.
+    let updated: AppointmentDocument | null = null;
+    const session = await this.conn.startSession();
+    try {
+      await session.withTransaction(async () => {
+        const appt = await this.appts
+          .findOne({ _id, tenantId, branchId, deletedAt: null })
+          .session(session)
+          .exec();
+        if (!appt) throw new NotFoundException('appointment not found');
+        if (!canTransition(appt.status, to)) {
+          throw new BadRequestException(`illegal transition ${appt.status} -> ${to}`);
+        }
+        const guarded = await this.appts
+          .findOneAndUpdate(
+            { _id, tenantId, branchId, status: appt.status, deletedAt: null },
+            { $set: { status: to } },
+            { new: true, session },
+          )
+          .exec();
+        if (!guarded) throw new ConflictException('appointment status changed concurrently');
+        // Cancelled / no-show / completed free the slots for other bookings —
+        // in the same transaction as the flip, so the two can never diverge.
+        if (RELEASING_STATUSES.includes(to)) {
+          await this.reservations.deleteMany({ tenantId, appointmentId: _id }, { session });
+        }
+        updated = guarded;
+      });
+    } finally {
+      await session.endSession();
     }
 
+    const appt = updated as unknown as AppointmentDocument;
     const t = String(appt.tenantId);
     const b = String(appt.branchId);
     const a = String(appt._id);

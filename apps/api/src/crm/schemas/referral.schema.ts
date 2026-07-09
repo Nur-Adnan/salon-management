@@ -24,6 +24,12 @@ export class Referral {
 
   @Prop({ type: Date, default: null })
   rewardedAt!: Date | null;
+
+  // The sale whose completion triggered the reward — recorded so voidSale() can
+  // find and reverse exactly this referral (reset to 'pending', claw the points
+  // back) if that triggering sale is later voided. Null until rewarded.
+  @Prop({ type: Types.ObjectId, default: null })
+  rewardedSaleId!: Types.ObjectId | null;
 }
 
 export type ReferralDocument = HydratedDocument<Referral>;

@@ -33,6 +33,13 @@ export class HrSaleCompletedHandler implements IEventHandler<SaleCompleted> {
       const saleId = new Types.ObjectId(event.saleId);
       const sale = await this.sales.findOne({ _id: saleId, tenantId }).exec();
       if (!sale) return;
+      // A sale voided before this best-effort handler ran must never accrue
+      // commission/tip: voidSale's synchronous reverseStaffEarningsForSale would
+      // find no entries to reverse, so a late earn would dangle and be paid out
+      // by the next payroll run (the void-before-earn overpayment the phase-6
+      // review's finding #1a targeted but the synchronous reversal alone can't
+      // close, since it cannot negate entries that don't exist yet).
+      if (sale.status !== 'completed') return;
 
       // Net (post-discount, pre-tax) revenue attributed to each distinct staff
       // member, summed across all their lines on this sale — commission is

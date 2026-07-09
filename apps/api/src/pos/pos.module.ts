@@ -9,6 +9,7 @@ import { GiftCard, GiftCardSchema } from '../crm/schemas/gift-card.schema.js';
 import { GiftCardLedgerEntry, GiftCardLedgerEntrySchema } from '../crm/schemas/gift-card-ledger-entry.schema.js';
 import { LoyaltyAccount, LoyaltyAccountSchema } from '../crm/schemas/loyalty-account.schema.js';
 import { LoyaltyLedgerEntry, LoyaltyLedgerEntrySchema } from '../crm/schemas/loyalty-ledger-entry.schema.js';
+import { Referral, ReferralSchema } from '../crm/schemas/referral.schema.js';
 import { SubscriptionPlan, SubscriptionPlanSchema } from '../crm/schemas/subscription-plan.schema.js';
 import { Customer, CustomerSchema } from '../customers/customer.schema.js';
 import { StaffEarningEntry, StaffEarningEntrySchema } from '../hr/schemas/staff-earning-entry.schema.js';
@@ -46,6 +47,7 @@ import { StockLevel, StockLevelSchema } from './schemas/stock-level.schema.js';
       { name: GiftCardLedgerEntry.name, schema: GiftCardLedgerEntrySchema },
       { name: LoyaltyAccount.name, schema: LoyaltyAccountSchema },
       { name: LoyaltyLedgerEntry.name, schema: LoyaltyLedgerEntrySchema },
+      { name: Referral.name, schema: ReferralSchema },
       { name: Coupon.name, schema: CouponSchema },
       { name: SubscriptionPlan.name, schema: SubscriptionPlanSchema },
       // Phase 6 HR: voidSale() reverses commission/tip entries synchronously

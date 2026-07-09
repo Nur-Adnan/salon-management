@@ -8,7 +8,7 @@ import {
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
 import { EventBus } from '@nestjs/cqrs';
 import type { AppointmentLineInput, CreateAppointment, ResourceType } from '@salon/shared';
-import { isTerminal } from '@salon/shared';
+import { TERMINAL_STATUSES, isTerminal } from '@salon/shared';
 import { DateTime } from 'luxon';
 import { type Connection, type Model, Types } from 'mongoose';
 import { Service, type ServiceDocument } from '../catalog/schemas/service.schema.js';
@@ -104,23 +104,36 @@ export class BookingService {
   async reschedule(id: string, lines: AppointmentLineInput[]): Promise<AppointmentDocument> {
     const { tenantId, branchId } = this.scope();
     const branch = await this.getBranch(tenantId, branchId);
+    const _id = new Types.ObjectId(id);
     const appt = await this.appts
-      .findOne({ _id: new Types.ObjectId(id), tenantId, branchId, deletedAt: null })
+      .findOne({ _id, tenantId, branchId, deletedAt: null })
       .exec();
     if (!appt) throw new NotFoundException('appointment not found');
+    // Fail-fast (outside the txn) for a nicer error; the authoritative check is
+    // the atomic guarded update INSIDE the transaction below.
     if (isTerminal(appt.status)) {
       throw new BadRequestException(`cannot reschedule a ${appt.status} appointment`);
     }
 
     const plan = await this.plan(tenantId, branchId, branch, lines);
-    const resDocs = plan.reservations.map((r) => ({ ...r, tenantId, branchId, appointmentId: appt._id }));
+    const resDocs = plan.reservations.map((r) => ({ ...r, tenantId, branchId, appointmentId: _id }));
 
     const session = await this.conn.startSession();
     try {
       await session.withTransaction(async () => {
-        await this.reservations.deleteMany({ appointmentId: appt._id }, { session });
-        appt.lines = plan.lines;
-        await appt.save({ session });
+        // Re-assert non-terminal ATOMICALLY inside the txn and write the new
+        // lines in the same op: a concurrent cancel/complete committing between
+        // the read above and here would otherwise leave a terminal appointment
+        // holding the fresh reservations we insert (a permanently blocked slot).
+        const guarded = await this.appts
+          .findOneAndUpdate(
+            { _id, tenantId, branchId, deletedAt: null, status: { $nin: [...TERMINAL_STATUSES] } },
+            { $set: { lines: plan.lines } },
+            { new: true, session },
+          )
+          .exec();
+        if (!guarded) throw new ConflictException('appointment is no longer reschedulable');
+        await this.reservations.deleteMany({ tenantId, appointmentId: _id }, { session });
         await this.reservations.insertMany(resDocs, { session, ordered: true });
       });
     } catch (err) {

@@ -14,6 +14,11 @@ import { ProductRepository, ServiceRepository } from './repositories.js';
 export interface PackagePricing {
   componentTotal: Money;
   savings: Money;
+  // Count of package items whose service/product no longer resolves (soft-
+  // deleted or removed). componentTotal/savings are computed over the REMAINING
+  // components only, so a non-zero count means those figures are partial —
+  // surfaced rather than silently understated.
+  missingComponents: number;
 }
 
 interface ItemRef {
@@ -59,7 +64,11 @@ export class PackagesService {
       return price ? [{ price, quantity: i.quantity }] : [];
     });
     const total = componentsTotal(components);
-    return { componentTotal: total, savings: packageSavings(total, money(pkg.price.amount)) };
+    return {
+      componentTotal: total,
+      savings: packageSavings(total, money(pkg.price.amount)),
+      missingComponents: pkg.items.length - components.length,
+    };
   }
 
   private resolve(

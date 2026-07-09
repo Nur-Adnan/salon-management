@@ -132,11 +132,28 @@ export class SubscriptionsService {
     // second time for one payment — checkout() itself is the single source of
     // truth for "did this request actually create a new sale".
     if (!wasReplayed) {
-      sub.currentPeriodStart = sub.nextBillingDate;
-      sub.nextBillingDate = new Date(
-        sub.nextBillingDate.getTime() + (await this.planBillingDays(sub.planId, tenantId)) * 86_400_000,
-      );
-      await sub.save();
+      const days = await this.planBillingDays(sub.planId, tenantId);
+      // Advance atomically, GUARDED on nextBillingDate being unchanged since we
+      // read it: two concurrent renews carrying DISTINCT idempotency keys would
+      // otherwise each read the same period and last-write-wins the advance (a
+      // lost update). Only the first advance matches the guard; a later one
+      // no-ops rather than clobbering the already-advanced period.
+      const advanced = await this.subscriptions
+        .findOneAndUpdate(
+          { _id: sub._id, tenantId, nextBillingDate: sub.nextBillingDate },
+          {
+            $set: {
+              currentPeriodStart: sub.nextBillingDate,
+              nextBillingDate: new Date(sub.nextBillingDate.getTime() + days * 86_400_000),
+            },
+          },
+          { new: true },
+        )
+        .exec();
+      // advanced === null means a concurrent renew already advanced this period;
+      // return the current persisted state rather than our stale in-memory doc.
+      const subscription = advanced ?? (await this.subscriptions.findOne({ _id: sub._id, tenantId }).exec()) ?? sub;
+      return { subscription, sale };
     }
     return { subscription: sub, sale };
   }

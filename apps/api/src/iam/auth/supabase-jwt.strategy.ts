@@ -17,11 +17,19 @@ function buildOptions(config: ConfigService<Env, true>): StrategyOptions {
   const jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
   const jwks = config.get('SUPABASE_JWKS_URL', { infer: true });
   if (jwks) {
+    // Supabase issues access tokens with aud='authenticated' and
+    // iss='<project-url>/auth/v1'. Pinning them rejects a validly-signed token
+    // minted for a different audience/project (defence against token confusion).
+    // Only enforced on the real (JWKS) path; the local HS256 dev tokens set no
+    // such claims and keep working via the fallback below.
+    const supabaseUrl = config.get('SUPABASE_URL', { infer: true });
     return {
       jwtFromRequest,
       ignoreExpiration: false,
       secretOrKeyProvider: passportJwtSecret({ jwksUri: jwks, cache: true, rateLimit: true }),
       algorithms: ['RS256', 'ES256'],
+      audience: 'authenticated',
+      ...(supabaseUrl ? { issuer: `${supabaseUrl.replace(/\/+$/, '')}/auth/v1` } : {}),
     };
   }
   return {

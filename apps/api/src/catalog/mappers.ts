@@ -52,4 +52,5 @@ export const serializePackage = (p: PackageDocument, pricing?: PackagePricing) =
   active: p.active,
   componentTotal: pricing ? { ...pricing.componentTotal } : null,
   savings: pricing ? { ...pricing.savings } : null,
+  missingComponents: pricing ? pricing.missingComponents : null,
 });
