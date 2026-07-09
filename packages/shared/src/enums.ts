@@ -147,6 +147,8 @@ export const SUBJECTS = [
   'Staff',
   'Attendance',
   'Payroll',
+  'Inventory',
+  'Supplier',
   'all',
 ] as const;
 export type Subject = (typeof SUBJECTS)[number];
@@ -159,3 +161,18 @@ export type Subject = (typeof SUBJECTS)[number];
 // StaffEarningEntry.
 export const STAFF_EARNING_KINDS = ['commission', 'tip'] as const;
 export type StaffEarningKind = (typeof STAFF_EARNING_KINDS)[number];
+
+// --- Phase 7: Inventory & Suppliers ---
+
+// Every StockMovement records WHY qtyOnHand changed. 'sale'/'void' come from POS,
+// 'purchase' from a received purchase order, 'adjustment' from a manual correction.
+export const STOCK_MOVEMENT_REASONS = ['sale', 'void', 'purchase', 'adjustment'] as const;
+export type StockMovementReason = (typeof STOCK_MOVEMENT_REASONS)[number];
+
+// A purchase order is immutable once received (stock has moved).
+export const PURCHASE_ORDER_STATUS = ['draft', 'received', 'cancelled'] as const;
+export type PurchaseOrderStatus = (typeof PURCHASE_ORDER_STATUS)[number];
+
+// Why a manual stock adjustment was made.
+export const STOCK_ADJUSTMENT_REASONS = ['recount', 'wastage', 'damage', 'correction'] as const;
+export type StockAdjustmentReason = (typeof STOCK_ADJUSTMENT_REASONS)[number];

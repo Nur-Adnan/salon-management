@@ -12,6 +12,7 @@ import {
   RESOURCE_TYPES,
   ROLES,
   SALE_LINE_KINDS,
+  STOCK_ADJUSTMENT_REASONS,
 } from './enums.js';
 
 export const localeSchema = z.enum(LOCALES);
@@ -273,6 +274,55 @@ export const setStockSchema = z.object({
   qtyOnHand: z.number().int(),
 });
 export type SetStock = z.infer<typeof setStockSchema>;
+
+// --- Phase 7: Inventory & Suppliers ---
+
+export const createSupplierSchema = z.object({
+  name: z.string().trim().min(1).max(120),
+  contact: z
+    .object({
+      phone: z.string().trim().max(32).optional(),
+      email: z.email().optional(),
+    })
+    .optional(),
+  address: z.string().trim().max(300).optional(),
+  note: z.string().trim().max(500).optional(),
+  active: z.boolean().default(true),
+});
+export type CreateSupplier = z.infer<typeof createSupplierSchema>;
+export const updateSupplierSchema = createSupplierSchema.partial();
+export type UpdateSupplier = z.infer<typeof updateSupplierSchema>;
+
+export const purchaseOrderLineSchema = z.object({
+  productId: objectIdSchema,
+  quantity: z.number().int().positive().max(100000),
+  unitCost: z.number().int().nonnegative(), // minor units (poisha)
+});
+export type PurchaseOrderLineDto = z.infer<typeof purchaseOrderLineSchema>;
+
+export const createPurchaseOrderSchema = z.object({
+  supplierId: objectIdSchema,
+  lines: z.array(purchaseOrderLineSchema).min(1),
+  note: z.string().trim().max(500).optional(),
+});
+export type CreatePurchaseOrder = z.infer<typeof createPurchaseOrderSchema>;
+
+export const createStockAdjustmentSchema = z.object({
+  productId: objectIdSchema,
+  qtyDelta: z
+    .number()
+    .int()
+    .refine((v) => v !== 0, 'qtyDelta must be non-zero'),
+  reason: z.enum(STOCK_ADJUSTMENT_REASONS),
+  note: z.string().trim().max(500).optional(),
+});
+export type CreateStockAdjustment = z.infer<typeof createStockAdjustmentSchema>;
+
+export const setReorderPointSchema = z.object({
+  productId: objectIdSchema,
+  reorderPoint: z.number().int().nonnegative(),
+});
+export type SetReorderPoint = z.infer<typeof setReorderPointSchema>;
 
 // --- Phase 5: CRM ---
 
