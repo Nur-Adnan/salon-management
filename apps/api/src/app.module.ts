@@ -13,6 +13,7 @@ import { CoreModule } from './common/core.module.js';
 import { CrmModule } from './crm/crm.module.js';
 import { CustomersModule } from './customers/customers.module.js';
 import { HrModule } from './hr/hr.module.js';
+import { InventoryModule } from './inventory/inventory.module.js';
 import { PosModule } from './pos/pos.module.js';
 import { SchedulingModule } from './scheduling/scheduling.module.js';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter.js';
@@ -73,6 +74,7 @@ import { RedisModule } from './infra/redis/redis.module.js';
     PosModule,
     CrmModule,
     HrModule,
+    InventoryModule,
     HealthModule,
     PingModule,
   ],

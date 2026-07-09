@@ -18,6 +18,10 @@ export class StockLevel {
 
   @Prop({ type: Number, required: true, default: 0 })
   qtyOnHand!: number;
+
+  // Phase 7: low-stock threshold. 0 = not tracked for reorder (never "low").
+  @Prop({ type: Number, required: true, default: 0 })
+  reorderPoint!: number;
 }
 
 export type StockLevelDocument = HydratedDocument<StockLevel>;

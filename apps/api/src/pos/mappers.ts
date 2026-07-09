@@ -1,6 +1,5 @@
 import { serializeMoney, serializeName } from '../common/embeds.js';
 import type { SaleDocument, SaleLine, Payment } from './schemas/sale.schema.js';
-import type { StockLevelDocument } from './schemas/stock-level.schema.js';
 
 const serializeLine = (l: SaleLine) => ({
   kind: l.kind,
@@ -42,9 +41,4 @@ export const serializeSale = (s: SaleDocument) => ({
   note: s.note ?? null,
   voidReason: s.voidReason ?? null,
   createdAt: (s as unknown as { createdAt?: Date }).createdAt?.toISOString() ?? null,
-});
-
-export const serializeStockLevel = (s: StockLevelDocument) => ({
-  productId: String(s.productId),
-  qtyOnHand: s.qtyOnHand,
 });

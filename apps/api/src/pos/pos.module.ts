@@ -16,8 +16,6 @@ import { StaffEarningEntry, StaffEarningEntrySchema } from '../hr/schemas/staff-
 import { Branch, BranchSchema } from '../iam/schemas/branch.schema.js';
 import { Membership, MembershipSchema } from '../iam/schemas/membership.schema.js';
 import { Appointment, AppointmentSchema } from '../scheduling/schemas/appointment.schema.js';
-import { InventoryController } from './inventory.controller.js';
-import { InventoryService } from './inventory.service.js';
 import { PaymentGateway } from './payment/providers.js';
 import { SalesController } from './sales.controller.js';
 import { SalesService } from './sales.service.js';
@@ -56,8 +54,8 @@ import { StockLevel, StockLevelSchema } from './schemas/stock-level.schema.js';
       { name: StaffEarningEntry.name, schema: StaffEarningEntrySchema },
     ]),
   ],
-  controllers: [SalesController, InventoryController],
-  providers: [SalesService, InventoryService, PaymentGateway],
+  controllers: [SalesController],
+  providers: [SalesService, PaymentGateway],
   exports: [SalesService],
 })
 export class PosModule {}
