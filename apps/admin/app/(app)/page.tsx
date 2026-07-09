@@ -35,6 +35,25 @@ export default async function Dashboard() {
 
   const branches = (await apiFetch<Branch[]>('/branches')).data ?? [];
 
+  // KPI tiles — only for roles with report access (403 => skip silently).
+  const [salesRes, invRes, crmRes] = await Promise.all([
+    apiFetch<{ totals: { net: number; count: number } }>('/reports/sales'),
+    apiFetch<{ totalValue: number; lowStockCount: number }>('/reports/inventory-value'),
+    apiFetch<{ giftCardOutstandingMinor: number; loyaltyValueMinor: number; dueBalanceMinor: number }>('/reports/crm-liabilities'),
+  ]);
+  const bdt = (p: number) => `৳${(p / 100).toFixed(2)}`;
+  const kpis =
+    salesRes.status !== 403
+      ? [
+          { label: 'Net sales (all-time)', value: bdt(salesRes.data?.totals.net ?? 0) },
+          { label: 'Sales count', value: String(salesRes.data?.totals.count ?? 0) },
+          { label: 'Stock value', value: bdt(invRes.data?.totalValue ?? 0) },
+          { label: 'Low-stock items', value: String(invRes.data?.lowStockCount ?? 0) },
+          { label: 'Outstanding due', value: bdt(crmRes.data?.dueBalanceMinor ?? 0) },
+          { label: 'Gift-card liability', value: bdt(crmRes.data?.giftCardOutstandingMinor ?? 0) },
+        ]
+      : [];
+
   return (
     <div className="flex flex-col gap-6">
       <div>
@@ -44,6 +63,17 @@ export default async function Dashboard() {
           <span className="text-brand">{me.role}</span>
         </p>
       </div>
+
+      {kpis.length > 0 ? (
+        <section className="flex flex-wrap gap-3">
+          {kpis.map((k) => (
+            <div key={k.label} className="rounded-medium border border-default-200 px-4 py-3 text-sm">
+              <div className="opacity-60">{k.label}</div>
+              <div className="text-lg font-bold">{k.value}</div>
+            </div>
+          ))}
+        </section>
+      ) : null}
 
       <section className="flex flex-col gap-2">
         <h2 className="font-semibold">Branches</h2>
