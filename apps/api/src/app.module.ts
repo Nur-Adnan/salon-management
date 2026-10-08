@@ -24,6 +24,7 @@ import { JwtAuthGuard } from './iam/auth/jwt-auth.guard.js';
 import { IamModule } from './iam/iam.module.js';
 import { NotificationsModule } from './notifications/notifications.module.js';
 import { MarketingModule } from './marketing/marketing.module.js';
+import { RealtimeModule } from './realtime/realtime.module.js';
 import { HealthModule } from './health/health.module.js';
 import { PingModule } from './ping/ping.module.js';
 import { QueueModule } from './queue/queue.module.js';
@@ -83,6 +84,7 @@ import { RedisModule } from './infra/redis/redis.module.js';
     ReportsModule,
     NotificationsModule,
     MarketingModule,
+    RealtimeModule,
     HealthModule,
     PingModule,
   ],

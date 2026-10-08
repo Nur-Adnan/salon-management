@@ -1,9 +1,11 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { EventBus } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
 import type { CreateWaitlist } from '@salon/shared';
 import { type Model, Types } from 'mongoose';
 import { RequestContextService } from '../common/context/request-context.service.js';
 import { CustomerRepository } from '../customers/customer.repository.js';
+import { WaitlistAdded, WaitlistCancelled } from './events.js';
 import { WaitlistEntry, type WaitlistEntryDocument } from './schemas/waitlist.schema.js';
 
 @Injectable()
@@ -12,6 +14,7 @@ export class WaitlistService {
     @InjectModel(WaitlistEntry.name) private readonly waitlist: Model<WaitlistEntryDocument>,
     private readonly customers: CustomerRepository,
     private readonly ctx: RequestContextService,
+    private readonly eventBus: EventBus,
   ) {}
 
   private scope(): { tenantId: Types.ObjectId; branchId: Types.ObjectId } {
@@ -26,7 +29,7 @@ export class WaitlistService {
       customerId: dto.customerId,
       customer: dto.customer,
     });
-    return this.waitlist.create({
+    const entry = await this.waitlist.create({
       tenantId,
       branchId,
       customerId,
@@ -36,6 +39,8 @@ export class WaitlistService {
       note: dto.note ?? null,
       status: 'waiting',
     });
+    this.eventBus.publish(new WaitlistAdded(String(tenantId), String(branchId), String(entry._id)));
+    return entry;
   }
 
   async list(): Promise<WaitlistEntryDocument[]> {
@@ -56,6 +61,7 @@ export class WaitlistService {
       )
       .exec();
     if (!w) throw new NotFoundException('waitlist entry not found');
+    this.eventBus.publish(new WaitlistCancelled(String(tenantId), String(branchId), String(w._id)));
     return w;
   }
 }

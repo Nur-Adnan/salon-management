@@ -23,3 +23,19 @@ export class AppointmentCompleted {
     public readonly appointmentId: string,
   ) {}
 }
+
+export class WaitlistAdded {
+  constructor(
+    public readonly tenantId: string,
+    public readonly branchId: string,
+    public readonly entryId: string,
+  ) {}
+}
+
+export class WaitlistCancelled {
+  constructor(
+    public readonly tenantId: string,
+    public readonly branchId: string,
+    public readonly entryId: string,
+  ) {}
+}
