@@ -8,9 +8,9 @@ const DEV_JWT_SECRET = 'dev-only-insecure-jwt-secret-change-me';
 
 export async function loginAsDemo(role: 'owner' | 'manager' | 'stylist' = 'owner') {
   const emailMap = {
-    owner: { sub: 'user-owner-1', email: 'owner@bloom.test' },
-    manager: { sub: 'user-manager-1', email: 'manager@bloom.test' },
-    stylist: { sub: 'user-stylist-1', email: 'rahim@bloom.test' },
+    owner: { sub: 'supa-owner-id', email: 'owner@luxe.com' },
+    manager: { sub: 'supa-owner-id', email: 'owner@luxe.com' },
+    stylist: { sub: 'supa-stylist-1', email: 'sarah@luxe.com' },
   };
   const user = emailMap[role] ?? emailMap.owner;
 
@@ -36,5 +36,7 @@ export async function loginAsDemo(role: 'owner' | 'manager' | 'stylist' = 'owner
     sameSite: 'lax',
     secure: process.env.NODE_ENV === 'production',
   });
+  c.set('active_tenant', '660000000000000000000001', { path: '/' });
+  c.set('active_branch', '660000000000000000000010', { path: '/' });
   redirect('/');
 }
