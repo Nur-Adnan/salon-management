@@ -17,8 +17,9 @@ description: Production readiness standards, environment configuration, database
 
 ## 3. Observability & Health Probes
 - All services must expose standard health endpoints:
-  - `GET /health/liveness`: Returns 200 if the process is responsive.
-  - `GET /health/readiness`: Returns 200 only if database connectivity (Prisma) and external services are operational.
+  - `GET /health`: Comprehensive health check validating MongoDB and Redis connectivity.
+  - `GET /health/live`: Liveness probe returning process uptime and timestamp.
+  - `GET /health/ready`: Readiness probe returning 200 only when database and Redis are operational.
 - Output logs in structured JSON format with timestamps, correlation IDs, and log levels (`error`, `warn`, `info`, `debug`).
 
 ## 4. Production Build Verification

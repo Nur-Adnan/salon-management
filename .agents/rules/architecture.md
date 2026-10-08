@@ -24,7 +24,7 @@ The repository is structured as a pnpm Turborepo modular monolith:
 - Each domain (e.g., appointments, services, staff, customers, payments, notifications) must reside in its own NestJS module within `apps/api/src/modules/<domain>/`.
 - A module must encapsulate its controller, service, repository queries, and DTOs.
 - Cross-module communication must use exported services or domain events, never direct database queries into another domain's tables.
-- Prisma ORM is the single source of truth for database schema and migrations (`apps/api/prisma/schema.prisma`).
+- Mongoose schemas and MongoDB models defined within domain modules are the source of truth for persistence.
 
 ## 4. Frontend Component & Route Architecture
 - Follow Next.js 14 App Router conventions (`app/[locale]/...` or `app/...`).

@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ../scripts/hooks/pre-tool-safety.js",
+            "command": "node scripts/hooks/pre-tool-safety.js",
             "timeout": 5
           }
         ]
@@ -22,7 +22,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "node ../scripts/hooks/post-edit-check.js",
+            "command": "node scripts/hooks/post-edit-check.js",
             "timeout": 5
           }
         ]
