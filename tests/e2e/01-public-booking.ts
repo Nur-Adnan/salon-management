@@ -124,8 +124,10 @@ async function run() {
 
     // Check service list items
     const services = await page.locator('text=Executive Haircut').first();
-    const serviceExists = await services.isVisible();
-    console.log('Service visible:', serviceExists);
+    // Select Sarah Khan (has active shifts)
+    const stylistSelect = page.locator('select').nth(2);
+    await stylistSelect.selectOption({ label: 'Sarah Khan' });
+    await page.waitForTimeout(500);
 
     // Click Find times button
     const findTimesBtn = page.getByRole('button', { name: 'Find times' });

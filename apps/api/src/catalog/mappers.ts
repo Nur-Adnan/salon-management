@@ -30,18 +30,22 @@ export const serializeProductCategory = (c: ProductCategoryDocument) => ({
   name: serializeName(c.name),
 });
 
-export const serializeProduct = (p: ProductDocument) => ({
-  id: String(p._id),
-  categoryId: p.categoryId ? String(p.categoryId) : null,
-  name: serializeName(p.name),
-  sku: p.sku,
-  barcode: p.barcode ?? null,
-  retailPrice: serializeMoney(p.retailPrice),
-  cost: serializeMoney(p.cost),
-  taxable: p.taxable,
-  expiryTracked: p.expiryTracked,
-  active: p.active,
-});
+export const serializeProduct = (p: ProductDocument) => {
+  const retail = p.retailPrice ?? (p as any).price ?? { amount: 0, currency: 'BDT' };
+  const cost = p.cost ?? (p as any).costPrice ?? { amount: 0, currency: 'BDT' };
+  return {
+    id: String(p._id),
+    categoryId: p.categoryId ? String(p.categoryId) : null,
+    name: serializeName(p.name),
+    sku: p.sku,
+    barcode: p.barcode ?? null,
+    retailPrice: serializeMoney(retail),
+    cost: serializeMoney(cost),
+    taxable: p.taxable ?? true,
+    expiryTracked: p.expiryTracked ?? false,
+    active: p.active ?? true,
+  };
+};
 
 export const serializePackage = (p: PackageDocument, pricing?: PackagePricing) => ({
   id: String(p._id),

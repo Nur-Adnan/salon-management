@@ -51,8 +51,12 @@ export default async function SalesPage({
   if (first.status === 403) {
     return <p className="opacity-70">Select a workspace + branch above to view sales.</p>;
   }
-  const sales = first.data ?? [];
-  const summary = (await apiFetch<Summary>(`/sales/summary?date=${date}`)).data;
+  const sales = Array.isArray(first.data) ? first.data : [];
+  const summaryRes = await apiFetch<Summary>(`/sales/summary?date=${date}`);
+  const summary =
+    summaryRes.status === 200 && summaryRes.data && !('statusCode' in summaryRes.data)
+      ? summaryRes.data
+      : null;
   const customers = (await apiFetch<Cust[]>('/customers')).data ?? [];
   const custName = new Map(customers.map((c) => [c.id, c.name]));
 
@@ -74,13 +78,13 @@ export default async function SalesPage({
 
       {summary ? (
         <section className="flex flex-wrap gap-6 rounded-large border border-default-200 p-4 text-sm">
-          <Stat label="Sales" value={String(summary.count)} />
-          <Stat label="Subtotal" value={bdt(summary.subtotal)} />
-          <Stat label="Discount" value={bdt(summary.discountTotal)} />
-          <Stat label="Tax" value={bdt(summary.taxTotal)} />
-          <Stat label="Tips" value={bdt(summary.tip)} />
-          <Stat label="Total" value={bdt(summary.total)} strong />
-          {Object.entries(summary.byMethod).map(([m, amt]) => (
+          <Stat label="Sales" value={String(summary.count ?? 0)} />
+          <Stat label="Subtotal" value={bdt(summary.subtotal ?? 0)} />
+          <Stat label="Discount" value={bdt(summary.discountTotal ?? 0)} />
+          <Stat label="Tax" value={bdt(summary.taxTotal ?? 0)} />
+          <Stat label="Tips" value={bdt(summary.tip ?? 0)} />
+          <Stat label="Total" value={bdt(summary.total ?? 0)} strong />
+          {Object.entries(summary.byMethod ?? {}).map(([m, amt]) => (
             <Stat key={m} label={m} value={bdt(amt)} />
           ))}
         </section>

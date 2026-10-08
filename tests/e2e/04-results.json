@@ -1,0 +1,29 @@
+[
+  {
+    "suite": "Calendar, POS & Sales",
+    "name": "Appointment Calendar & Waitlist View",
+    "status": "PASS",
+    "details": "Calendar loaded with date navigation controls, appointment grid, and waitlist section.",
+    "durationMs": 760,
+    "consoleErrors": [],
+    "screenshotPath": "04_admin_calendar.png"
+  },
+  {
+    "suite": "Calendar, POS & Sales",
+    "name": "POS Cash Register & Checkout Workflow",
+    "status": "PASS",
+    "details": "Added item from 1 catalog options, tendered payment, and completed sale successfully.",
+    "durationMs": 3932,
+    "consoleErrors": [],
+    "screenshotPath": "04_admin_pos_checked_out.png"
+  },
+  {
+    "suite": "Calendar, POS & Sales",
+    "name": "Sales Invoices & Revenue Summary View",
+    "status": "PASS",
+    "details": "Sales history loaded with 1 invoices and revenue totals.",
+    "durationMs": 701,
+    "consoleErrors": [],
+    "screenshotPath": "04_admin_sales_history.png"
+  }
+]

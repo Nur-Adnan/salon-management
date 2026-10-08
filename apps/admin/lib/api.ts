@@ -39,7 +39,10 @@ export async function apiFetch<T>(
   const res = await fetch(`${API_URL}${path}`, { ...init, headers, cache: 'no-store' });
   let data: T | null = null;
   try {
-    data = (await res.json()) as T;
+    const json = await res.json();
+    if (res.ok) {
+      data = json as T;
+    }
   } catch {
     // empty body
   }

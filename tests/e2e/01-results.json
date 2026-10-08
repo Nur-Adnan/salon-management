@@ -4,7 +4,7 @@
     "name": "Landing Page & Responsive Layout (Mobile_320px)",
     "status": "PASS",
     "details": "Rendered successfully at 320x568 with title 'Book an appointment'. No horizontal overflow.",
-    "durationMs": 796,
+    "durationMs": 972,
     "consoleErrors": [],
     "screenshotPath": "01_booking_landing_Mobile_320px.png"
   },
@@ -13,7 +13,7 @@
     "name": "Landing Page & Responsive Layout (Mobile_375px)",
     "status": "PASS",
     "details": "Rendered successfully at 375x667 with title 'Book an appointment'. No horizontal overflow.",
-    "durationMs": 692,
+    "durationMs": 708,
     "consoleErrors": [],
     "screenshotPath": "01_booking_landing_Mobile_375px.png"
   },
@@ -22,7 +22,7 @@
     "name": "Landing Page & Responsive Layout (Tablet_768px)",
     "status": "PASS",
     "details": "Rendered successfully at 768x1024 with title 'Book an appointment'. No horizontal overflow.",
-    "durationMs": 720,
+    "durationMs": 702,
     "consoleErrors": [],
     "screenshotPath": "01_booking_landing_Tablet_768px.png"
   },
@@ -31,7 +31,7 @@
     "name": "Landing Page & Responsive Layout (Desktop_1280px)",
     "status": "PASS",
     "details": "Rendered successfully at 1280x800 with title 'Book an appointment'. No horizontal overflow.",
-    "durationMs": 741,
+    "durationMs": 720,
     "consoleErrors": [],
     "screenshotPath": "01_booking_landing_Desktop_1280px.png"
   },
@@ -40,17 +40,17 @@
     "name": "Landing Page & Responsive Layout (Desktop_1920px)",
     "status": "PASS",
     "details": "Rendered successfully at 1920x1080 with title 'Book an appointment'. No horizontal overflow.",
-    "durationMs": 719,
+    "durationMs": 714,
     "consoleErrors": [],
     "screenshotPath": "01_booking_landing_Desktop_1920px.png"
   },
   {
     "suite": "Public Booking",
     "name": "End-to-End Booking Submission Flow",
-    "status": "PARTIAL",
-    "details": "Inputs not found in expected DOM state.",
-    "durationMs": 2221,
+    "status": "PASS",
+    "details": "Successfully selected service, staff, date, and completed appointment booking with confirmation message.",
+    "durationMs": 6433,
     "consoleErrors": [],
-    "screenshotPath": "01_booking_form_filled.png"
+    "screenshotPath": "01_booking_confirmed.png"
   }
 ]

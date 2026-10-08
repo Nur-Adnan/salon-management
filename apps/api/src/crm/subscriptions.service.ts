@@ -85,7 +85,10 @@ export class SubscriptionsService {
     const now = new Date();
     return subs.map((doc) => ({
       doc,
-      billingState: doc.status === 'active' ? subscriptionBillingState(doc.nextBillingDate, now) : 'current',
+      billingState:
+        doc.status === 'active'
+          ? subscriptionBillingState(doc.nextBillingDate ?? (doc as any).currentPeriodEnd, now)
+          : 'current',
     }));
   }
 

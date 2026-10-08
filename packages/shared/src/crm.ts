@@ -47,11 +47,14 @@ export interface BillingWindows {
 export const DEFAULT_BILLING_WINDOWS: BillingWindows = { graceDays: 3, lapseDays: 7 };
 
 export function subscriptionBillingState(
-  nextBillingDate: Date,
+  nextBillingDate: Date | string | null | undefined,
   now: Date,
   windows: BillingWindows = DEFAULT_BILLING_WINDOWS,
 ): SubscriptionBillingState {
-  const overdueDays = (now.getTime() - nextBillingDate.getTime()) / 86_400_000;
+  if (!nextBillingDate) return 'current';
+  const billingTime = nextBillingDate instanceof Date ? nextBillingDate.getTime() : new Date(nextBillingDate).getTime();
+  if (Number.isNaN(billingTime)) return 'current';
+  const overdueDays = (now.getTime() - billingTime) / 86_400_000;
   if (overdueDays < 0) return 'current';
   if (overdueDays < windows.graceDays) return 'due';
   if (overdueDays < windows.lapseDays) return 'grace';

@@ -1,0 +1,43 @@
+[
+  {
+    "suite": "Security & Access Control",
+    "name": "Unauthenticated Request Rejection",
+    "status": "PASS",
+    "details": "GET /catalog/products returned HTTP 401 (expected 401 Unauthorized).",
+    "durationMs": 16,
+    "consoleErrors": []
+  },
+  {
+    "suite": "Security & Access Control",
+    "name": "Cross-Tenant IDOR Boundary",
+    "status": "PASS",
+    "details": "Cross-tenant profile query rejected with HTTP 403 (expected 403/401).",
+    "durationMs": 20,
+    "consoleErrors": []
+  },
+  {
+    "suite": "Security & Access Control",
+    "name": "Role-Based Access Control (RBAC) Enforcement",
+    "status": "PASS",
+    "details": "Stylist role strictly prohibited from accessing team member invitations and management.",
+    "durationMs": 1595,
+    "consoleErrors": [],
+    "screenshotPath": "07_admin_rbac_stylist_restricted.png"
+  },
+  {
+    "suite": "Security & Infrastructure",
+    "name": "Rate Limiting & Anti-Brute-Force Protection",
+    "status": "PASS",
+    "details": "Burst of 65 requests successfully triggered 429 Too Many Requests rate limiting.",
+    "durationMs": 48,
+    "consoleErrors": []
+  },
+  {
+    "suite": "Data Integrity & Validation",
+    "name": "Input Validation & Malformed Payload Rejection",
+    "status": "PASS",
+    "details": "Submitting empty customer name and invalid phone rejected with HTTP 400.",
+    "durationMs": 5,
+    "consoleErrors": []
+  }
+]

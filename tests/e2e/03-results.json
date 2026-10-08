@@ -1,0 +1,64 @@
+[
+  {
+    "suite": "Admin Auth & Dashboard",
+    "name": "Protected Route Gate (Redirect to /login)",
+    "status": "PASS",
+    "details": "Visiting root / without token automatically redirected to /login.",
+    "durationMs": 773,
+    "consoleErrors": [],
+    "screenshotPath": "03_admin_unauth_redirect.png"
+  },
+  {
+    "suite": "Admin Auth & Dashboard",
+    "name": "Login Screen Layout (Mobile_375px)",
+    "status": "PASS",
+    "details": "Rendered clean login form at 375x667 with 0 horizontal overflow.",
+    "durationMs": 723,
+    "consoleErrors": [],
+    "screenshotPath": "03_admin_login_Mobile_375px.png"
+  },
+  {
+    "suite": "Admin Auth & Dashboard",
+    "name": "Login Screen Layout (Tablet_768px)",
+    "status": "PASS",
+    "details": "Rendered clean login form at 768x1024 with 0 horizontal overflow.",
+    "durationMs": 736,
+    "consoleErrors": [],
+    "screenshotPath": "03_admin_login_Tablet_768px.png"
+  },
+  {
+    "suite": "Admin Auth & Dashboard",
+    "name": "Login Screen Layout (Desktop_1280px)",
+    "status": "PASS",
+    "details": "Rendered clean login form at 1280x800 with 0 horizontal overflow.",
+    "durationMs": 720,
+    "consoleErrors": [],
+    "screenshotPath": "03_admin_login_Desktop_1280px.png"
+  },
+  {
+    "suite": "Admin Auth & Dashboard",
+    "name": "Dashboard KPIs & Branches View",
+    "status": "PASS",
+    "details": "Dashboard rendered 6 KPI tiles and 2 branches for owner.",
+    "durationMs": 956,
+    "consoleErrors": [],
+    "screenshotPath": "03_admin_dashboard_full.png"
+  },
+  {
+    "suite": "Admin Auth & Dashboard",
+    "name": "Multi-Branch Scope Switcher",
+    "status": "PASS",
+    "details": "Active branch/tenant scope selector operational in navigation bar.",
+    "durationMs": 4,
+    "consoleErrors": [],
+    "screenshotPath": "03_admin_scope_switched.png"
+  },
+  {
+    "suite": "Admin Auth & Dashboard",
+    "name": "Sign Out & Session Invalidation",
+    "status": "PASS",
+    "details": "Signed out successfully; token deleted; subsequent route access redirected to /login.",
+    "durationMs": 629,
+    "consoleErrors": []
+  }
+]

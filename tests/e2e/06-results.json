@@ -1,0 +1,65 @@
+[
+  {
+    "suite": "HR & Team Management",
+    "name": "Team Directory & Staff Invitations",
+    "status": "PASS",
+    "details": "Loaded team directory with 3 members and invited new stylist 'staff_8550@luxe.com'.",
+    "durationMs": 1942,
+    "consoleErrors": [],
+    "screenshotPath": "06_admin_team.png"
+  },
+  {
+    "suite": "HR & Staff Operations",
+    "name": "Shift Attendance Clock-In & Clock-Out",
+    "status": "PASS",
+    "details": "Clock-in recorded open shift successfully and clock-out closed shift.",
+    "durationMs": 2723,
+    "consoleErrors": [],
+    "screenshotPath": "06_admin_attendance.png"
+  },
+  {
+    "suite": "HR & Payroll",
+    "name": "Payroll Processing & Commission Ledger",
+    "status": "PASS",
+    "details": "Payroll dashboard with compensation calculations and commission ledger visible.",
+    "durationMs": 669,
+    "consoleErrors": [],
+    "screenshotPath": "06_admin_payroll.png"
+  },
+  {
+    "suite": "Executive Reports & Analytics",
+    "name": "Sales & Revenue Analytics Report",
+    "status": "PASS",
+    "details": "Sales summary, breakdown by payment method and service/product category loaded.",
+    "durationMs": 658,
+    "consoleErrors": [],
+    "screenshotPath": "06_admin_reports_sales.png"
+  },
+  {
+    "suite": "Executive Reports & Analytics",
+    "name": "Staff Performance & Attribution Report",
+    "status": "PASS",
+    "details": "Staff appointment volume, service revenue attribution, and tips tracking loaded.",
+    "durationMs": 1309,
+    "consoleErrors": [],
+    "screenshotPath": "06_admin_reports_staff.png"
+  },
+  {
+    "suite": "Executive Reports & Analytics",
+    "name": "Inventory Valuation & Reorder Status Report",
+    "status": "PASS",
+    "details": "Total inventory retail valuation, cost valuation, and reorder alerts loaded.",
+    "durationMs": 1020,
+    "consoleErrors": [],
+    "screenshotPath": "06_admin_reports_inventory.png"
+  },
+  {
+    "suite": "Executive Reports & Analytics",
+    "name": "Appointment Volume & Booking Analytics Report",
+    "status": "PASS",
+    "details": "Booking channels, completion vs cancellation rates, and occupancy analytics loaded.",
+    "durationMs": 976,
+    "consoleErrors": [],
+    "screenshotPath": "06_admin_reports_appointments.png"
+  }
+]

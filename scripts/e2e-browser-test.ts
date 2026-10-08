@@ -174,7 +174,7 @@ async function run() {
   // B-007: Client Portal Login Screen
   await recordTest('B-007', 'Client Portal', 'Login Screen', 'http://localhost:3001/luxe-salon/portal', 'Render phone OTP form', async () => {
     await page.goto('http://localhost:3001/luxe-salon/portal', { waitUntil: 'networkidle' });
-    await page.waitForSelector('text=Client Portal');
+    await page.waitForSelector('text=Client Self-Service Portal');
     const screenshot = 'b007_portal_login.png';
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, screenshot) });
     return { evidence: `Client Portal login rendered, screenshot: ${screenshot}` };
@@ -188,8 +188,8 @@ async function run() {
     await page.locator('button:has-text("Send verification code")').click();
 
     // Verify OTP input appears
-    await page.waitForSelector('input[placeholder="000000"]');
-    const otpInput = page.locator('input[placeholder="000000"]');
+    await page.waitForSelector('input[placeholder="123456"]');
+    const otpInput = page.locator('input[placeholder="123456"]');
 
     // Negative OTP test: 000000
     await otpInput.fill('000000');
@@ -217,8 +217,8 @@ async function run() {
 
   // B-010: Client Portal Tabs (Appointments, Past, Loyalty, Gift Cards, Profile)
   await recordTest('B-010', 'Client Portal', 'Navigation Tabs', 'http://localhost:3001/luxe-salon/portal', 'Switch between all tabs', async () => {
-    // Past tab
-    await page.locator('button:has-text("Past Visits")').click();
+    // History tab
+    await page.locator('button:has-text("History")').click();
     await page.waitForTimeout(300);
     const pastScreenshot = 'b010_tab_past.png';
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, pastScreenshot) });
@@ -230,12 +230,12 @@ async function run() {
     const cardScreenshot = 'b010_tab_giftcards.png';
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, cardScreenshot) });
 
-    // Loyalty tab
-    await page.locator('button:has-text("Loyalty")').click();
+    // Perks tab
+    await page.locator('button:has-text("Perks")').click();
     await page.waitForTimeout(300);
 
     // Profile Settings tab
-    await page.locator('button:has-text("Profile Settings")').click();
+    await page.locator('button:has-text("Profile")').click();
     await page.waitForTimeout(300);
     const profileScreenshot = 'b010_tab_profile.png';
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, profileScreenshot) });
@@ -263,8 +263,8 @@ async function run() {
 
   // B-012: Portal Sign Out
   await recordTest('B-012', 'Client Portal', 'Sign Out', 'http://localhost:3001/luxe-salon/portal', 'Clear session and return to login', async () => {
-    await page.locator('button:has-text("Sign out")').click();
-    await page.waitForSelector('text=Client Portal');
+    await page.locator('button:has-text("Log Out")').click();
+    await page.waitForSelector('text=Client Self-Service Portal');
     const hasPhone = await page.locator('input[type="tel"]').isVisible();
     const screenshot = 'b012_signed_out.png';
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, screenshot) });

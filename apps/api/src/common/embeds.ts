@@ -22,5 +22,12 @@ export class LocalizedName {
 }
 export const LocalizedNameSchema = SchemaFactory.createForClass(LocalizedName);
 
-export const serializeMoney = (m: MoneyEmbed) => ({ amount: m.amount, currency: m.currency });
-export const serializeName = (n: LocalizedName) => ({ en: n.en, bn: n.bn ?? null });
+export const serializeMoney = (m?: MoneyEmbed | null) => ({
+  amount: m?.amount ?? 0,
+  currency: m?.currency ?? 'BDT',
+});
+export const serializeName = (n?: LocalizedName | string | null) => {
+  if (!n) return { en: '', bn: null };
+  if (typeof n === 'string') return { en: n, bn: null };
+  return { en: n.en ?? '', bn: n.bn ?? null };
+};

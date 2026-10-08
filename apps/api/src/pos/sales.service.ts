@@ -537,13 +537,15 @@ export class SalesService {
     let tip = 0;
     let total = 0;
     for (const s of sales) {
-      subtotal += s.subtotal.amount;
-      discountTotal += s.discountTotal.amount;
-      taxTotal += s.taxTotal.amount;
-      tip += s.tip.amount;
-      total += s.total.amount;
-      for (const p of s.payments) {
-        if (p.status === 'captured') byMethod[p.method] = (byMethod[p.method] ?? 0) + p.amount.amount;
+      subtotal += s.subtotal?.amount ?? 0;
+      discountTotal += s.discountTotal?.amount ?? 0;
+      taxTotal += s.taxTotal?.amount ?? 0;
+      tip += (s.tip?.amount ?? (s as any).tipTotal?.amount ?? 0);
+      total += s.total?.amount ?? 0;
+      for (const p of s.payments ?? []) {
+        if (!p.status || p.status === 'captured') {
+          byMethod[p.method] = (byMethod[p.method] ?? 0) + (p.amount?.amount ?? 0);
+        }
       }
     }
     return { date: date ?? null, count: sales.length, subtotal, discountTotal, taxTotal, tip, total, byMethod };

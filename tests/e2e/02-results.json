@@ -1,0 +1,47 @@
+[
+  {
+    "suite": "Client Portal",
+    "name": "Login Screen Layout (Mobile_375px)",
+    "status": "PASS",
+    "details": "Rendered clean login view at 375x667 with 0 horizontal overflow.",
+    "durationMs": 703,
+    "consoleErrors": [],
+    "screenshotPath": "02_portal_login_Mobile_375px.png"
+  },
+  {
+    "suite": "Client Portal",
+    "name": "Login Screen Layout (Tablet_768px)",
+    "status": "PASS",
+    "details": "Rendered clean login view at 768x1024 with 0 horizontal overflow.",
+    "durationMs": 699,
+    "consoleErrors": [],
+    "screenshotPath": "02_portal_login_Tablet_768px.png"
+  },
+  {
+    "suite": "Client Portal",
+    "name": "Login Screen Layout (Desktop_1280px)",
+    "status": "PASS",
+    "details": "Rendered clean login view at 1280x800 with 0 horizontal overflow.",
+    "durationMs": 687,
+    "consoleErrors": [],
+    "screenshotPath": "02_portal_login_Desktop_1280px.png"
+  },
+  {
+    "suite": "Client Portal",
+    "name": "OTP Authentication & Session Initiation",
+    "status": "PASS",
+    "details": "Successfully requested OTP, submitted 123456, and authenticated client Farhana Yasmin.",
+    "durationMs": 4364,
+    "consoleErrors": [],
+    "screenshotPath": "02_portal_dashboard_upcoming.png"
+  },
+  {
+    "suite": "Client Portal",
+    "name": "Client Session Persistence on Page Reload",
+    "status": "PASS",
+    "details": "Session persisted after hard refresh without requiring re-authentication.",
+    "durationMs": 573,
+    "consoleErrors": [],
+    "screenshotPath": "02_portal_tab_profile.png"
+  }
+]

@@ -69,14 +69,18 @@ export const serializeSubscriptionPlan = (p: SubscriptionPlanDocument) => ({
   active: p.active,
 });
 
-export const serializeCustomerSubscription = (s: CustomerSubscriptionDocument) => ({
-  id: String(s._id),
-  customerId: String(s.customerId),
-  planId: String(s.planId),
-  status: s.status,
-  currentPeriodStart: s.currentPeriodStart.toISOString(),
-  nextBillingDate: s.nextBillingDate.toISOString(),
-});
+export const serializeCustomerSubscription = (s: CustomerSubscriptionDocument) => {
+  const start = s.currentPeriodStart ?? (s as any).createdAt ?? new Date();
+  const next = s.nextBillingDate ?? (s as any).currentPeriodEnd ?? new Date();
+  return {
+    id: String(s._id),
+    customerId: String(s.customerId),
+    planId: String(s.planId),
+    status: s.status,
+    currentPeriodStart: (start instanceof Date ? start : new Date(start)).toISOString(),
+    nextBillingDate: (next instanceof Date ? next : new Date(next)).toISOString(),
+  };
+};
 
 const serializeConsent = (c: PhotoConsent) => ({
   status: c.status,

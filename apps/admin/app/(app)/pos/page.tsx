@@ -44,12 +44,17 @@ export default async function PosPage() {
   if (first.status === 403) {
     return <p className="opacity-70">Select a workspace + branch above to open the register.</p>;
   }
-  const services = (first.data ?? []).filter((s) => s.active);
-  const products = ((await apiFetch<Prod[]>('/catalog/products')).data ?? []).filter((p) => p.active);
-  const packages = ((await apiFetch<Pkg[]>('/catalog/packages')).data ?? []).filter((p) => p.active);
-  const staff = (await apiFetch<Staff[]>('/staff')).data ?? [];
-  const customers = (await apiFetch<Cust[]>('/customers')).data ?? [];
-  const branches = (await apiFetch<Branch[]>('/branches')).data ?? [];
+  const services = Array.isArray(first.data) ? first.data.filter((s) => s.active) : [];
+  const prodRes = await apiFetch<Prod[]>('/catalog/products');
+  const products = Array.isArray(prodRes.data) ? prodRes.data.filter((p) => p.active) : [];
+  const pkgRes = await apiFetch<Pkg[]>('/catalog/packages');
+  const packages = Array.isArray(pkgRes.data) ? pkgRes.data.filter((p) => p.active) : [];
+  const staffRes = await apiFetch<Staff[]>('/staff');
+  const staff = Array.isArray(staffRes.data) ? staffRes.data : [];
+  const custRes = await apiFetch<Cust[]>('/customers');
+  const customers = Array.isArray(custRes.data) ? custRes.data : [];
+  const branchRes = await apiFetch<Branch[]>('/branches');
+  const branches = Array.isArray(branchRes.data) ? branchRes.data : [];
 
   const scope = await getActiveScope();
   const vatRateBps = branches.find((b) => b.id === scope.branchId)?.vatRateBps ?? 0;

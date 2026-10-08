@@ -455,8 +455,8 @@ async function seed() {
     name: { en: "L'Oréal Keratin Shampoo 500ml", bn: 'কেরাটিন শ্যাম্পু' },
     sku: 'LOR-SHP-500',
     barcode: '8901234567890',
-    price: { amount: 220000, currency: 'BDT' }, // 2,200 BDT
-    costPrice: { amount: 140000, currency: 'BDT' },
+    retailPrice: { amount: 220000, currency: 'BDT' }, // 2,200 BDT
+    cost: { amount: 140000, currency: 'BDT' },
     active: true,
     deletedAt: null,
     createdAt: new Date(),

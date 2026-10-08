@@ -1,0 +1,65 @@
+[
+  {
+    "suite": "CRM & Client Management",
+    "name": "Customers Directory & Creation",
+    "status": "PASS",
+    "details": "Verified existing customer and successfully added 'Test Customer 2868' with phone +8801816141753.",
+    "durationMs": 1825,
+    "consoleErrors": [],
+    "screenshotPath": "05_admin_customers_list.png"
+  },
+  {
+    "suite": "CRM & Client Management",
+    "name": "Customer 360 Profile & Loyalty Stats",
+    "status": "PASS",
+    "details": "Profile loaded with 450 loyalty points, treatment history, sales records, and gift cards.",
+    "durationMs": 862,
+    "consoleErrors": [],
+    "screenshotPath": "05_admin_customer_360_profile.png"
+  },
+  {
+    "suite": "CRM & Marketing",
+    "name": "Gift Cards Directory & Issuance",
+    "status": "PASS",
+    "details": "Found seeded card and issued new ৳1,500.00 gift card successfully (3 total cards).",
+    "durationMs": 1808,
+    "consoleErrors": [],
+    "screenshotPath": "05_admin_gift_cards.png"
+  },
+  {
+    "suite": "CRM & Marketing",
+    "name": "Coupons Builder & Campaigns",
+    "status": "PASS",
+    "details": "Verified existing coupons and created new 15% promo coupon 'TEST7300'.",
+    "durationMs": 1733,
+    "consoleErrors": [],
+    "screenshotPath": "05_admin_coupons.png"
+  },
+  {
+    "suite": "Memberships & Subscriptions",
+    "name": "Membership Plans Directory",
+    "status": "PASS",
+    "details": "VIP Beauty Club (৳4,999.00 / 30d) visible and active.",
+    "durationMs": 654,
+    "consoleErrors": [],
+    "screenshotPath": "05_admin_membership_plans.png"
+  },
+  {
+    "suite": "Catalog Management",
+    "name": "Services, Products & Bundled Packages",
+    "status": "PASS",
+    "details": "Services, retail products with SKU/barcode, and package bundles all loaded with pricing.",
+    "durationMs": 2007,
+    "consoleErrors": [],
+    "screenshotPath": "05_admin_catalog_services.png"
+  },
+  {
+    "suite": "Inventory & Procurement",
+    "name": "Inventory Stock, Suppliers & Purchase Orders",
+    "status": "PASS",
+    "details": "Stock levels table, supplier management, and purchase order tracking verified.",
+    "durationMs": 1914,
+    "consoleErrors": [],
+    "screenshotPath": "05_admin_inventory.png"
+  }
+]
