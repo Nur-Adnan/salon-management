@@ -1,4 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { createHmac, randomUUID } from 'node:crypto';
 import type { Env } from '../../config/env.js';
 
@@ -43,8 +44,33 @@ export class BkashAdapter {
   private readonly logger = new Logger(BkashAdapter.name);
   private token: string | null = null;
   private tokenExpiry = 0;
+  private readonly env: Env;
 
-  constructor(private readonly env: Env) {}
+  constructor(@Optional() @Inject(ConfigService) configOrEnv?: ConfigService<Env, true> | Partial<Env>) {
+    if (configOrEnv && typeof (configOrEnv as Record<string, unknown>).get === 'function') {
+      const cfg = configOrEnv as ConfigService<Env, true>;
+      this.env = {
+        BKASH_APP_KEY: cfg.get('BKASH_APP_KEY', { infer: true }) ?? '',
+        BKASH_APP_SECRET: cfg.get('BKASH_APP_SECRET', { infer: true }) ?? '',
+        BKASH_USERNAME: cfg.get('BKASH_USERNAME', { infer: true }) ?? '',
+        BKASH_PASSWORD: cfg.get('BKASH_PASSWORD', { infer: true }) ?? '',
+        BKASH_WEBHOOK_SECRET: cfg.get('BKASH_WEBHOOK_SECRET', { infer: true }) ?? '',
+        BKASH_IS_SANDBOX: cfg.get('BKASH_IS_SANDBOX', { infer: true }) ?? true,
+        WEB_ORIGINS: cfg.get('WEB_ORIGINS', { infer: true }) ?? 'http://localhost:3000',
+      } as Env;
+    } else {
+      this.env = {
+        WEB_ORIGINS: 'http://localhost:3000',
+        BKASH_IS_SANDBOX: true,
+        BKASH_APP_KEY: '',
+        BKASH_APP_SECRET: '',
+        BKASH_USERNAME: '',
+        BKASH_PASSWORD: '',
+        BKASH_WEBHOOK_SECRET: '',
+        ...((configOrEnv as Partial<Env>) ?? {}),
+      } as Env;
+    }
+  }
 
   private get baseUrl(): string {
     return this.env.BKASH_IS_SANDBOX

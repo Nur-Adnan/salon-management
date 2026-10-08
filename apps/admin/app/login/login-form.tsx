@@ -4,6 +4,7 @@ import { Button } from '@salon/ui';
 import { useTranslations } from 'next-intl';
 import { type FormEvent, useState } from 'react';
 import { createClient } from '@/lib/supabase/client';
+import { loginAsDemo } from './actions';
 
 const inputCls =
   'rounded-medium border border-default-300 bg-default-50 px-3 py-2 text-sm outline-none focus:border-brand';
@@ -71,6 +72,21 @@ export function LoginForm() {
         {t('google')}
       </Button>
       {msg ? <p className="text-sm text-danger">{msg}</p> : null}
+
+      <div className="mt-4 border-t border-default-200 pt-4 flex flex-col gap-2">
+        <p className="text-xs text-default-500 text-center font-medium">DEMO / DEVELOPMENT ACCESS</p>
+        <Button type="button" onPress={() => loginAsDemo('owner')} className="w-full">
+          Sign in as Demo Owner
+        </Button>
+        <div className="flex gap-2">
+          <Button type="button" onPress={() => loginAsDemo('manager')} className="flex-1">
+            Manager
+          </Button>
+          <Button type="button" onPress={() => loginAsDemo('stylist')} className="flex-1">
+            Stylist
+          </Button>
+        </div>
+      </div>
     </form>
   );
 }

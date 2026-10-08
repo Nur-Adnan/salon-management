@@ -9,15 +9,28 @@ export async function apiFetch<T>(
   path: string,
   init: RequestInit & { tenantId?: string; branchId?: string } = {},
 ): Promise<{ status: number; data: T | null }> {
-  const supabase = await createClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  let token: string | undefined;
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    try {
+      const supabase = await createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      token = session?.access_token;
+    } catch {
+      // Supabase unconfigured
+    }
+  }
+  if (!token) {
+    const { cookies } = await import('next/headers');
+    const cookieStore = await cookies();
+    token = cookieStore.get('salon_token')?.value;
+  }
   const scope = await getActiveScope();
 
   const headers = new Headers(init.headers);
   headers.set('content-type', 'application/json');
-  if (session?.access_token) headers.set('authorization', `Bearer ${session.access_token}`);
+  if (token) headers.set('authorization', `Bearer ${token}`);
   const tenantId = init.tenantId ?? scope.tenantId;
   const branchId = init.branchId ?? scope.branchId;
   if (tenantId) headers.set('x-tenant-id', tenantId);

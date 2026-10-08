@@ -84,7 +84,17 @@ export async function setCompensation(userId: string, formData: FormData): Promi
 }
 
 export async function signOut(): Promise<void> {
-  const supabase = await createClient();
-  await supabase.auth.signOut();
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    try {
+      const supabase = await createClient();
+      await supabase.auth.signOut();
+    } catch {
+      // Supabase unconfigured
+    }
+  }
+  const c = await cookies();
+  c.delete('salon_token');
+  c.delete(TENANT_COOKIE);
+  c.delete(BRANCH_COOKIE);
   redirect('/login');
 }

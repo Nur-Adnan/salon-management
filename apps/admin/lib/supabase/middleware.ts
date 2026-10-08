@@ -8,32 +8,40 @@ const PUBLIC_PREFIXES = ['/login', '/auth'];
 export async function updateSession(request: NextRequest): Promise<NextResponse> {
   let response = NextResponse.next({ request });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL ?? '',
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
+  let user = null;
+  if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+    try {
+      const supabase = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? '',
+        {
+          cookies: {
+            getAll() {
+              return request.cookies.getAll();
+            },
+            setAll(cookiesToSet) {
+              for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
+              response = NextResponse.next({ request });
+              for (const { name, value, options } of cookiesToSet) {
+                response.cookies.set(name, value, options);
+              }
+            },
+          },
         },
-        setAll(cookiesToSet) {
-          for (const { name, value } of cookiesToSet) request.cookies.set(name, value);
-          response = NextResponse.next({ request });
-          for (const { name, value, options } of cookiesToSet) {
-            response.cookies.set(name, value, options);
-          }
-        },
-      },
-    },
-  );
+      );
+      const res = await supabase.auth.getUser();
+      user = res.data?.user;
+    } catch {
+      // Supabase unconfigured or offline
+    }
+  }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const devToken = request.cookies.get('salon_token')?.value;
+  const isAuthenticated = Boolean(user || devToken);
 
   const path = request.nextUrl.pathname;
   const isPublic = PUBLIC_PREFIXES.some((p) => path.startsWith(p));
-  if (!user && !isPublic) {
+  if (!isAuthenticated && !isPublic) {
     const url = request.nextUrl.clone();
     url.pathname = '/login';
     return NextResponse.redirect(url);

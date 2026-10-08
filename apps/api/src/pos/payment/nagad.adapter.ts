@@ -1,4 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { createSign, createVerify, publicEncrypt, randomUUID } from 'node:crypto';
 import type { Env } from '../../config/env.js';
 
@@ -26,8 +27,27 @@ export interface NagadVerifyResponse {
 @Injectable()
 export class NagadAdapter {
   private readonly logger = new Logger(NagadAdapter.name);
+  private readonly env: Env;
 
-  constructor(private readonly env: Env) {}
+  constructor(@Optional() @Inject(ConfigService) configOrEnv?: ConfigService<Env, true> | Partial<Env>) {
+    if (configOrEnv && typeof (configOrEnv as Record<string, unknown>).get === 'function') {
+      const cfg = configOrEnv as ConfigService<Env, true>;
+      this.env = {
+        NAGAD_MERCHANT_ID: cfg.get('NAGAD_MERCHANT_ID', { infer: true }) ?? '',
+        NAGAD_PUBLIC_KEY: cfg.get('NAGAD_PUBLIC_KEY', { infer: true }) ?? '',
+        NAGAD_PRIVATE_KEY: cfg.get('NAGAD_PRIVATE_KEY', { infer: true }) ?? '',
+        NAGAD_IS_SANDBOX: cfg.get('NAGAD_IS_SANDBOX', { infer: true }) ?? true,
+      } as Env;
+    } else {
+      this.env = {
+        NAGAD_MERCHANT_ID: '',
+        NAGAD_PUBLIC_KEY: '',
+        NAGAD_PRIVATE_KEY: '',
+        NAGAD_IS_SANDBOX: true,
+        ...((configOrEnv as Partial<Env>) ?? {}),
+      } as Env;
+    }
+  }
 
   private get baseUrl(): string {
     return this.env.NAGAD_IS_SANDBOX

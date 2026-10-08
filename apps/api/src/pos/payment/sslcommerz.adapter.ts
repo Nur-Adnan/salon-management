@@ -1,4 +1,5 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Inject, Injectable, Logger, Optional } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { createHash, randomUUID } from 'node:crypto';
 import type { Env } from '../../config/env.js';
 
@@ -31,8 +32,25 @@ export interface SslValidationResponse {
 @Injectable()
 export class SslCommerzAdapter {
   private readonly logger = new Logger(SslCommerzAdapter.name);
+  private readonly env: Env;
 
-  constructor(private readonly env: Env) {}
+  constructor(@Optional() @Inject(ConfigService) configOrEnv?: ConfigService<Env, true> | Partial<Env>) {
+    if (configOrEnv && typeof (configOrEnv as Record<string, unknown>).get === 'function') {
+      const cfg = configOrEnv as ConfigService<Env, true>;
+      this.env = {
+        SSLCOMMERZ_STORE_ID: cfg.get('SSLCOMMERZ_STORE_ID', { infer: true }) ?? '',
+        SSLCOMMERZ_STORE_PASS: cfg.get('SSLCOMMERZ_STORE_PASS', { infer: true }) ?? '',
+        SSLCOMMERZ_IS_LIVE: cfg.get('SSLCOMMERZ_IS_LIVE', { infer: true }) ?? false,
+      } as Env;
+    } else {
+      this.env = {
+        SSLCOMMERZ_STORE_ID: '',
+        SSLCOMMERZ_STORE_PASS: '',
+        SSLCOMMERZ_IS_LIVE: false,
+        ...((configOrEnv as Partial<Env>) ?? {}),
+      } as Env;
+    }
+  }
 
   private get baseUrl(): string {
     return this.env.SSLCOMMERZ_IS_LIVE

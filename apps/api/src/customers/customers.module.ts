@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { CqrsModule } from '@nestjs/cqrs';
 import { MongooseModule } from '@nestjs/mongoose';
 import { CustomerSubscription, CustomerSubscriptionSchema } from '../crm/schemas/customer-subscription.schema.js';
 import { GiftCard, GiftCardSchema } from '../crm/schemas/gift-card.schema.js';
@@ -27,6 +28,7 @@ import { CustomersController } from './customers.controller.js';
       { name: CustomerSubscription.name, schema: CustomerSubscriptionSchema },
       { name: GiftCard.name, schema: GiftCardSchema },
     ]),
+    CqrsModule,
     NotificationsModule,
   ],
   controllers: [CustomersController, ClientPortalController],
