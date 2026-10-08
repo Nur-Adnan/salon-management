@@ -3,3 +3,126 @@
 @import '@salon/ui/styles.css';
 
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* Lenis smooth scrolling support */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+/* Luxury Editorial & Technology Design Tokens */
+:root {
+  --bg-primary: #0a0b0e;
+  --bg-surface: #111318;
+  --bg-elevated: #161920;
+  --accent-gold: #d4a373;
+  --accent-champagne: #faedcd;
+  --accent-rose: #d48b70;
+  --text-primary: #f8f9fa;
+  --text-secondary: #9ba1a6;
+  --border-hairline: rgba(255, 255, 255, 0.08);
+  --border-highlight: rgba(212, 163, 115, 0.25);
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Editorial Typography */
+.font-editorial {
+  font-family: 'Playfair Display', Georgia, Cambria, serif;
+}
+
+.font-sans-clean {
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Glassmorphism with Sharp Geometry */
+.glass-panel-sharp {
+  background: rgba(17, 19, 24, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--border-hairline);
+  position: relative;
+}
+
+.glass-panel-sharp::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+}
+
+.glass-card-interactive {
+  background: rgba(17, 19, 24, 0.55);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border-hairline);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, background-color 0.25s ease;
+}
+
+.glass-card-interactive:hover {
+  border-color: var(--border-highlight);
+  background: rgba(22, 25, 32, 0.75);
+}
+
+/* Subtle Shimmer & Metallic Accents */
+.text-gradient-gold {
+  background: linear-gradient(135deg, #faedcd 0%, #d4a373 60%, #bc6c25 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-silver {
+  background: linear-gradient(135deg, #ffffff 0%, #ced4da 60%, #868e96 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.ambient-glow {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(120px);
+  pointer-events: none;
+  opacity: 0.18;
+}
+
+/* High-contrast focus state for accessibility */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+
+/* Disable animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
