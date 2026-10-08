@@ -1,0 +1,378 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "AURA Haute Wellness OS" [ref=e5] [cursor=pointer]:
+          - /url: /
+          - generic [ref=e10]:
+            - generic [ref=e11]: AURA
+            - generic [ref=e12]: Haute Wellness OS
+        - navigation [ref=e13]:
+          - link "Rituals" [ref=e14] [cursor=pointer]:
+            - /url: "#rituals"
+          - link "Live Concierge" [ref=e15] [cursor=pointer]:
+            - /url: "#concierge"
+          - link "Operating System" [ref=e16] [cursor=pointer]:
+            - /url: "#pillars"
+          - link "Architecture" [ref=e17] [cursor=pointer]:
+            - /url: "#architecture"
+          - link "Sanctuaries" [ref=e18] [cursor=pointer]:
+            - /url: "#sanctuaries"
+        - generic [ref=e19]:
+          - link "VIP PORTAL" [ref=e20] [cursor=pointer]:
+            - /url: /luxe-salon/portal
+          - link "RESERVE RITUAL" [ref=e25] [cursor=pointer]:
+            - /url: /luxe-salon
+          - link "Admin" [ref=e31] [cursor=pointer]:
+            - /url: http://localhost:3000
+    - main [ref=e37]:
+      - generic [ref=e39]:
+        - generic [ref=e40]:
+          - generic [ref=e41]: Aura OS · Enterprise Wellness
+          - generic [ref=e44]: Gulshan Avenue Flagship & Dhanmondi Suites
+        - generic [ref=e49]:
+          - generic [ref=e50]:
+            - heading "Precision Aesthetics. Cinematic Hospitality." [level=1] [ref=e51]: Precision Aesthetics.Cinematic Hospitality.
+            - paragraph [ref=e52]: The unified operating system engineered for prestigious luxury salons, medical wellness clinics, and bespoke day spas. Unifying distributed sub-second slot resolution, clinical color ledgers, dual-rail fiscal POS, and predictive stock intelligence into one cohesive sanctuary experience.
+            - generic [ref=e53]:
+              - link "RESERVE APPOINTMENT" [ref=e54] [cursor=pointer]:
+                - /url: /luxe-salon
+              - link "TRY LIVE CONCIERGE" [ref=e58] [cursor=pointer]:
+                - /url: "#concierge"
+              - link "Client VIP Portal →" [ref=e61] [cursor=pointer]:
+                - /url: /luxe-salon/portal
+            - generic [ref=e62]:
+              - generic [ref=e63]:
+                - paragraph [ref=e64]: 0.04s
+                - paragraph [ref=e65]: Atomic Slot Resolution
+              - generic [ref=e66]:
+                - paragraph [ref=e67]: 100%
+                - paragraph [ref=e68]: Zero Double-Booking
+              - generic [ref=e69]:
+                - paragraph [ref=e70]: ৳32M+
+                - paragraph [ref=e71]: Luxury GMV Handled
+          - generic [ref=e73]:
+            - generic [ref=e74]:
+              - generic [ref=e75]: AURA_NODE_ACTIVE
+              - generic [ref=e78]: "LATENCY: 14MS"
+            - generic [ref=e80]:
+              - generic [ref=e88]: ATOMIC_SLOT_RESOLVER
+              - generic [ref=e89]: CLINICAL_COLOR_LEDGER
+              - generic [ref=e90]: BKASH_NAGAD_POS
+              - generic [ref=e91]: FIFO_INVENTORY
+            - generic [ref=e92]:
+              - generic [ref=e93]:
+                - generic [ref=e94]: Active Sanctuary
+                - generic [ref=e95]: Gulshan Avenue (Dhaka)
+              - generic [ref=e96]:
+                - generic [ref=e97]: Master Artisans On Duty
+                - generic [ref=e98]: Sarah, Sophia, Rahim (100% Ready)
+              - generic [ref=e99]:
+                - generic [ref=e100]: Available Appointments Today
+                - generic [ref=e101]: 37 Slots Open
+            - link "SELECT DATE & ARTISAN DIRECTLY" [ref=e103] [cursor=pointer]:
+              - /url: /luxe-salon
+      - generic [ref=e108]:
+        - generic [ref=e109]:
+          - generic [ref=e110]: Interactive Treatment Concierge
+          - heading "Experience Sub-Second Scheduling." [level=2] [ref=e111]
+          - paragraph [ref=e112]: Select your sanctuary, desired ritual, and master artisan. Watch AuraOS resolve real-time availability, calculate transparent pricing, and prepare your reservation instantenously.
+        - generic [ref=e113]:
+          - generic [ref=e114]:
+            - generic [ref=e115]:
+              - paragraph [ref=e116]: Step 1 · Choose Sanctuary Location
+              - generic [ref=e117]:
+                - button "Gulshan Avenue Flagship Plot 42, Road 11, Gulshan-1, Dhaka Full Clinical Suite · VIP Hydro-Lounge" [ref=e118]:
+                  - generic [ref=e119]: Gulshan Avenue Flagship
+                  - generic [ref=e123]: Plot 42, Road 11, Gulshan-1, Dhaka
+                  - generic [ref=e124]: Full Clinical Suite · VIP Hydro-Lounge
+                - button "Dhanmondi Botanical Sanctuary House 28, Road 7/A, Dhanmondi, Dhaka Aromatherapy Suites · Botanical Garden View" [ref=e125]:
+                  - generic [ref=e126]: Dhanmondi Botanical Sanctuary
+                  - generic [ref=e128]: House 28, Road 7/A, Dhanmondi, Dhaka
+                  - generic [ref=e129]: Aromatherapy Suites · Botanical Garden View
+            - generic [ref=e130]:
+              - paragraph [ref=e131]: Step 2 · Select Bespoke Ritual
+              - generic [ref=e132]:
+                - button "Couture Hair · 45 min Executive Haircut & Styling Consultation, botanical scalp therapy, custom scissor architecture, and styling finish. ৳1,500.00 Deposit ৳500.00" [ref=e133]:
+                  - generic [ref=e134]:
+                    - generic [ref=e135]:
+                      - generic [ref=e136]: Couture Hair
+                      - generic [ref=e137]: · 45 min
+                    - heading "Executive Haircut & Styling" [level=4] [ref=e138]
+                    - paragraph [ref=e139]: Consultation, botanical scalp therapy, custom scissor architecture, and styling finish.
+                  - generic [ref=e140]:
+                    - generic [ref=e141]: ৳1,500.00
+                    - generic [ref=e142]: Deposit ৳500.00
+                - button "Medical Aesthetics · 45 min Diamond Glow Hydrafacial Triple-vortex clinical extraction, peptide infusion, and cryogenic lymphatic drainage. ৳3,500.00 Deposit ৳1,000.00" [ref=e143]:
+                  - generic [ref=e144]:
+                    - generic [ref=e145]:
+                      - generic [ref=e146]: Medical Aesthetics
+                      - generic [ref=e147]: · 45 min
+                    - heading "Diamond Glow Hydrafacial" [level=4] [ref=e148]
+                    - paragraph [ref=e149]: Triple-vortex clinical extraction, peptide infusion, and cryogenic lymphatic drainage.
+                  - generic [ref=e150]:
+                    - generic [ref=e151]: ৳3,500.00
+                    - generic [ref=e152]: Deposit ৳1,000.00
+                - button "Signature Ceremonies · 120 min Bridal Royal Ceremony Bundle Comprehensive couture styling, 24K gold hydration ritual, and clinical glow prep. ৳12,000.00 Deposit ৳3,000.00" [ref=e153]:
+                  - generic [ref=e154]:
+                    - generic [ref=e155]:
+                      - generic [ref=e156]: Signature Ceremonies
+                      - generic [ref=e157]: · 120 min
+                    - heading "Bridal Royal Ceremony Bundle" [level=4] [ref=e158]
+                    - paragraph [ref=e159]: Comprehensive couture styling, 24K gold hydration ritual, and clinical glow prep.
+                  - generic [ref=e160]:
+                    - generic [ref=e161]: ৳12,000.00
+                    - generic [ref=e162]: Deposit ৳3,000.00
+            - generic [ref=e163]:
+              - paragraph [ref=e164]: Step 3 · Preferred Master Artisan
+              - generic [ref=e165]:
+                - button "Sarah Khan Senior Stylist & Creative Lead ★ 4.99 / 5.0" [ref=e166]:
+                  - generic [ref=e167]: Sarah Khan
+                  - generic [ref=e171]: Senior Stylist & Creative Lead
+                  - generic [ref=e172]: ★ 4.99 / 5.0
+                - button "Sophia Rahman Master Aesthetic Director ★ 5.00 / 5.0" [ref=e173]:
+                  - generic [ref=e174]: Sophia Rahman
+                  - generic [ref=e176]: Master Aesthetic Director
+                  - generic [ref=e177]: ★ 5.00 / 5.0
+                - button "First Available Master Artisan Optimal Earliest Schedule ★ 5.00 / 5.0" [ref=e178]:
+                  - generic [ref=e179]: First Available Master Artisan
+                  - generic [ref=e181]: Optimal Earliest Schedule
+                  - generic [ref=e182]: ★ 5.00 / 5.0
+          - generic [ref=e184]:
+            - generic [ref=e185]:
+              - generic [ref=e186]: CONFIRMATION_TELEMETRY
+              - generic [ref=e187]: SLOTS_AVAILABLE
+            - generic [ref=e188]:
+              - generic [ref=e189]:
+                - text: Selected Sanctuary
+                - paragraph [ref=e190]: Gulshan Avenue Flagship
+              - generic [ref=e191]:
+                - text: Bespoke Treatment
+                - generic [ref=e192]:
+                  - paragraph [ref=e193]: Executive Haircut & Styling
+                  - generic [ref=e194]: 45m
+              - generic [ref=e195]:
+                - text: Assigned Master Artist
+                - paragraph [ref=e196]: Sarah Khan
+                - paragraph [ref=e197]: Senior Stylist & Creative Lead
+              - generic [ref=e198]:
+                - generic [ref=e199]:
+                  - generic [ref=e200]: Treatment Fee
+                  - generic [ref=e201]: ৳1,500.00
+                - generic [ref=e202]:
+                  - generic [ref=e203]: Applicable VAT (15%)
+                  - generic [ref=e204]: ৳225.00
+                - generic [ref=e205]:
+                  - generic [ref=e206]: Estimated Total
+                  - generic [ref=e207]: ৳1,725.00
+                - generic [ref=e208]:
+                  - generic [ref=e209]: Due at Booking (Deposit)
+                  - generic [ref=e210]: ৳500.00
+              - generic [ref=e211]:
+                - generic [ref=e212]: Free cancellation up to 2 hours before scheduled slot
+                - generic [ref=e217]: Earn 10 Loyalty Points per ৳100 spent
+              - generic [ref=e222]:
+                - link "PROCEED WITH THIS RESERVATION" [ref=e223] [cursor=pointer]:
+                  - /url: /luxe-salon?branch=660000000000000000000010
+                - paragraph [ref=e227]: Locks slot instantly in AuraOS distributed calendar
+      - generic [ref=e229]:
+        - generic [ref=e230]:
+          - generic [ref=e231]:
+            - text: Architectural Foundations
+            - heading "Engineered For Sanctuary Sovereignty." [level=2] [ref=e232]
+          - paragraph [ref=e233]: A cohesive modular monolith operating system designed to replace fractured third-party SaaS point solutions with unified precision.
+        - generic [ref=e234]:
+          - generic [ref=e235]:
+            - generic [ref=e236]:
+              - generic [ref=e237]:
+                - generic [ref=e238]: "01"
+                - generic [ref=e239]: DISTRIBUTED SCHEDULING
+              - heading "Atomic Availability Engine" [level=3] [ref=e246]
+              - paragraph [ref=e247]: Sub-second calendar matrix computing staff shifts, room resources, and multi-treatment buffer transitions. Guaranteed zero double-booking through Redis distributed mutex locks and atomic MongoDB replica-set transactions.
+            - generic [ref=e248]: "GUARANTEE: 0.04s Slot Query · ACID Transaction Integrity"
+          - generic [ref=e250]:
+            - generic [ref=e251]:
+              - generic [ref=e252]:
+                - generic [ref=e253]: "02"
+                - generic [ref=e254]: MEDICAL & COSMETIC INTELLIGENCE
+              - heading "Clinical Aesthetic CRM & Charting" [level=3] [ref=e260]
+              - paragraph [ref=e261]: Precision records for bespoke color formulas, patch-test chemical allergies, and clinical before/after photography. Built-in compliance workflows enforce explicit digital photo consent scopes before marketing exposure.
+            - generic [ref=e262]: "GUARANTEE: Audit-Proof Consent Scopes · Formula Versioning"
+          - generic [ref=e264]:
+            - generic [ref=e265]:
+              - generic [ref=e266]:
+                - generic [ref=e267]: "03"
+                - generic [ref=e268]: FISCAL INFRASTRUCTURE
+              - heading "Dual-Rail Point of Sale (POS)" [level=3] [ref=e273]
+              - paragraph [ref=e274]: Offline-resilient cash register engineered for rapid checkout. Seamlessly split tenders across bKash, Nagad, Cards, and Cash with instant staff revenue attribution, tip allocation, and automated VAT reconciliation.
+            - generic [ref=e275]: "GUARANTEE: Split-Tender Settlement · Offline Queue Sync"
+          - generic [ref=e277]:
+            - generic [ref=e278]:
+              - generic [ref=e279]:
+                - generic [ref=e280]: "04"
+                - generic [ref=e281]: SUPPLY CHAIN OPTIMIZATION
+              - heading "FIFO Perishable Inventory" [level=3] [ref=e294]
+              - paragraph [ref=e295]: Real-time stock tracking with First-In, First-Out (FIFO) lot allocation, perishable expiration countdowns, barcode lookups, and automated supplier purchase order generation when stock falls below reorder points.
+            - generic [ref=e296]: "GUARANTEE: Lot Traceability · Automated Reorder Triggers"
+          - generic [ref=e298]:
+            - generic [ref=e299]:
+              - generic [ref=e300]:
+                - generic [ref=e301]: "05"
+                - generic [ref=e302]: WORKFORCE OPERATIONS
+              - heading "Staff Sovereignty & Payroll Engine" [level=3] [ref=e310]
+              - paragraph [ref=e311]: Shift attendance clock-in with tamper-proof timestamps. Real-time commission ledger automatically computes tiered service rates, retail product spiffs, and tip distributions into monthly salary slips.
+            - generic [ref=e312]: "GUARANTEE: Transparent Commission Ledger · Shift Auditing"
+          - generic [ref=e314]:
+            - generic [ref=e315]:
+              - generic [ref=e316]:
+                - generic [ref=e317]: "06"
+                - generic [ref=e318]: GUEST EXPERIENCES
+              - heading "VIP Client Sovereign Portal" [level=3] [ref=e325]
+              - paragraph [ref=e326]: Passwordless phone OTP authentication gives clients a biometric digital concierge. Guests manage upcoming bookings, review past treatments, track loyalty points (10 pts / ৳100), and redeem digital gift cards.
+            - generic [ref=e327]: "GUARANTEE: Rate-Limited OTP Authentication · Real-Time Wallet"
+      - generic [ref=e330]:
+        - generic [ref=e331]:
+          - generic [ref=e332]: Transactional Architecture
+          - heading "Atomic Booking Execution Pipeline." [level=2] [ref=e333]
+          - paragraph [ref=e334]: Every guest reservation passes through a 5-stage distributed transaction pipeline engineered for zero downtime, strict multi-tenant isolation, and sub-second execution.
+        - generic [ref=e335]:
+          - button "STAGE 01 2ms Guest Intake & Cryptographic Request" [ref=e336]:
+            - generic [ref=e337]:
+              - generic [ref=e338]: STAGE 01
+              - generic [ref=e339]: 2ms
+            - generic [ref=e340]: Guest Intake & Cryptographic Request
+          - button "STAGE 02 12ms Distributed Concurrency Mutex" [ref=e345]:
+            - generic [ref=e346]:
+              - generic [ref=e347]: STAGE 02
+              - generic [ref=e348]: 12ms
+            - generic [ref=e349]: Distributed Concurrency Mutex
+          - button "STAGE 03 34ms ACID ReplicaSet Transaction" [active] [ref=e354]:
+            - generic [ref=e355]:
+              - generic [ref=e356]: STAGE 03
+              - generic [ref=e357]: 34ms
+            - generic [ref=e358]: ACID ReplicaSet Transaction
+          - button "STAGE 04 18ms Dual-Rail Fiscal Allocation" [ref=e364]:
+            - generic [ref=e365]:
+              - generic [ref=e366]: STAGE 04
+              - generic [ref=e367]: 18ms
+            - generic [ref=e368]: Dual-Rail Fiscal Allocation
+          - button "STAGE 05 8ms Real-Time Telemetry & Dispatch" [ref=e372]:
+            - generic [ref=e373]:
+              - generic [ref=e374]: STAGE 05
+              - generic [ref=e375]: 8ms
+            - generic [ref=e376]: Real-Time Telemetry & Dispatch
+        - generic [ref=e581]:
+          - generic [ref=e582]:
+            - generic [ref=e583]:
+              - generic [ref=e584]: STAGE 03
+              - generic [ref=e585]: "LATENCY BENCHMARK: 34ms"
+            - heading "ACID ReplicaSet Transaction" [level=3] [ref=e586]
+            - paragraph [ref=e587]: Appointment document inserted atomically with audit log and status set to confirmed.
+          - generic [ref=e588]:
+            - paragraph [ref=e589]: Distributed Guarantees
+            - list [ref=e590]:
+              - listitem [ref=e591]:
+                - generic [ref=e595]: MongoDB ReplicaSet (rs0) transaction ensures all-or-nothing guarantee
+              - listitem [ref=e596]:
+                - generic [ref=e600]: Staff calendar projection indexed by start/end timestamps
+              - listitem [ref=e601]:
+                - generic [ref=e605]: Waitlist automatic resolution triggered if a conflicting slot cancelled
+      - generic [ref=e409]:
+        - generic [ref=e410]:
+          - generic [ref=e411]: Proven In Prestige Sanctuaries
+          - heading "Trusted By Elite Wellness Directors." [level=2] [ref=e412]
+          - paragraph [ref=e413]: Hear how Bangladesh’s premier luxury salons and clinical aesthetic practices run their daily operations with AuraOS.
+        - generic [ref=e414]:
+          - generic [ref=e415]:
+            - paragraph [ref=e428]: "\"AuraOS eliminated our booking collisions entirely. The clinical color formula ledger means our VIP guests get identical precision across both our Gulshan and Dhanmondi locations without relying on paper charts.\""
+            - generic [ref=e429]:
+              - paragraph [ref=e430]: Farhana Chowdhury
+              - paragraph [ref=e431]: Creative Director & Founder
+              - paragraph [ref=e432]: Luxe Salon & Aesthetic Sanctuary (Dhaka)
+          - generic [ref=e433]:
+            - paragraph [ref=e446]: "\"The dual-rail POS with integrated bKash and Nagad split-tenders doubled our front-desk checkout velocity. Our stylists now track their daily commission and tips live directly from their mobile portal.\""
+            - generic [ref=e447]:
+              - paragraph [ref=e448]: Naveed Al-Hassan
+              - paragraph [ref=e449]: Operations & Managing Partner
+              - paragraph [ref=e450]: The Royal Spa Suites
+          - generic [ref=e451]:
+            - paragraph [ref=e464]: "\"The passwordless OTP client portal increased repeat rebooking by 38%. Our guests love having their complete treatment history and loyalty wallet in one clean, biometric screen.\""
+            - generic [ref=e465]:
+              - paragraph [ref=e466]: Dr. Samira Khan
+              - paragraph [ref=e467]: Lead Dermatological Aesthetician
+              - paragraph [ref=e468]: Aura Medical Wellness
+      - generic [ref=e470]:
+        - generic [ref=e471]:
+          - generic [ref=e472]: Clarity & Technical Detail
+          - heading "Frequently Explored Inquiries." [level=2] [ref=e473]
+        - generic [ref=e474]:
+          - generic [ref=e475]:
+            - button "How does AuraOS guarantee zero double-bookings during peak hours?" [ref=e476]
+            - paragraph [ref=e481]: "AuraOS uses a dual-layer concurrency architecture: a Redis distributed lock guards the specific staff member, room resource, and time interval for the duration of the reservation process, while MongoDB ReplicaSet multi-document transactions ensure all schedule updates, customer ledgers, and audit trails commit atomically."
+          - button "How does the POS register handle bKash, Nagad, and Card split-tenders?" [ref=e483]
+          - button "How are clinical treatment notes and chemical allergy warnings managed?" [ref=e488]
+          - button "Can guests reschedule or cancel appointments without calling the front desk?" [ref=e493]
+          - button "How does the inventory system prevent product stockouts and expired cosmetics?" [ref=e498]
+      - generic [ref=e503]:
+        - generic [ref=e504]: Experience Haute Hospitality
+        - heading "Elevate Your Sanctuary To Architectural Perfection." [level=2] [ref=e509]
+        - paragraph [ref=e510]: Join the prestigious salons and medical aesthetic directors operating on AuraOS. Whether reserving your next bespoke ritual or deploying AuraOS across your multi-branch network, step into the future of luxury wellness today.
+        - generic [ref=e511]:
+          - link "RESERVE APPOINTMENT NOW" [ref=e512] [cursor=pointer]:
+            - /url: /luxe-salon
+          - link "LAUNCH SALON ADMIN SUITE" [ref=e518] [cursor=pointer]:
+            - /url: http://localhost:3000
+    - contentinfo [ref=e525]:
+      - generic [ref=e526]:
+        - generic [ref=e527]:
+          - generic [ref=e528]:
+            - generic [ref=e529]: AURA
+            - paragraph [ref=e535]: The high-performance operating system designed for prestige luxury salons, aesthetic clinics, and boutique wellness sanctuaries.
+            - generic [ref=e536]: "AuraOS Core: All Services Operational (12ms)"
+          - generic [ref=e539]:
+            - heading "Sanctuary Access" [level=4] [ref=e540]
+            - list [ref=e541]:
+              - listitem [ref=e542]:
+                - link "Reserve Appointment (Online)" [ref=e543] [cursor=pointer]:
+                  - /url: /luxe-salon
+              - listitem [ref=e544]:
+                - link "VIP Client Self-Service Portal" [ref=e545] [cursor=pointer]:
+                  - /url: /luxe-salon/portal
+              - listitem [ref=e546]:
+                - link "Live Treatment Concierge" [ref=e547] [cursor=pointer]:
+                  - /url: "#concierge"
+              - listitem [ref=e548]: Gulshan Avenue Flagship (Dhaka)
+              - listitem [ref=e549]: Dhanmondi Botanical Suite
+          - generic [ref=e550]:
+            - heading "Platform Modules" [level=4] [ref=e551]
+            - list [ref=e552]:
+              - listitem [ref=e553]:
+                - link "Salon Admin & Management Suite" [ref=e554] [cursor=pointer]:
+                  - /url: http://localhost:3000
+              - listitem [ref=e555]:
+                - link "Atomic Scheduling Engine" [ref=e556] [cursor=pointer]:
+                  - /url: "#pillars"
+              - listitem [ref=e557]:
+                - link "Clinical Color Formula CRM" [ref=e558] [cursor=pointer]:
+                  - /url: "#pillars"
+              - listitem [ref=e559]:
+                - link "Multi-Rail Point of Sale (POS)" [ref=e560] [cursor=pointer]:
+                  - /url: "#pillars"
+              - listitem [ref=e561]:
+                - link "FIFO Perishable Inventory" [ref=e562] [cursor=pointer]:
+                  - /url: "#pillars"
+          - generic [ref=e563]:
+            - heading "Governance" [level=4] [ref=e564]
+            - list [ref=e565]:
+              - listitem [ref=e566]:
+                - generic [ref=e569]: Photo Consent Standards
+              - listitem [ref=e570]: HIPAA & GDPR Compliant
+              - listitem [ref=e571]: Multi-Tenant Data Isolation
+              - listitem [ref=e572]: Bangladesh VAT Compliance
+        - generic [ref=e573]:
+          - paragraph [ref=e574]: © 2026 Aura Luxury Wellness Platform. All rights reserved.
+          - generic [ref=e575]:
+            - generic [ref=e576]: Privacy Shield
+            - generic [ref=e577]: Terms of Service
+            - generic [ref=e578]: Security Architecture
+  - alert [ref=e579]
