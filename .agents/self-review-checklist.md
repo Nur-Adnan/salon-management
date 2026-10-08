@@ -1,0 +1,1 @@
+/Users/adnan/Desktop/Projects/Management Systems/salon-management/.agents/rules/self-review.md

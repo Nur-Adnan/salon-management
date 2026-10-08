@@ -1,0 +1,24 @@
+{
+  "version": "1.0",
+  "defaultPolicy": "allow_read",
+  "filesystem": {
+    "read": ["/Users/adnan/Desktop/Projects/Management Systems/salon-management/**"],
+    "write": ["/Users/adnan/Desktop/Projects/Management Systems/salon-management/**"],
+    "deny": [
+      "/Users/adnan/Desktop/Projects/Management Systems/salon-management/**/.env*",
+      "!/Users/adnan/Desktop/Projects/Management Systems/salon-management/.env.example"
+    ]
+  },
+  "terminal": {
+    "blockedCommands": [
+      "rm -rf /",
+      "rm -rf ~",
+      "rm -rf *",
+      "git reset --hard*",
+      "git clean -fd*",
+      "git push --force*",
+      "git push -f*",
+      "drop database*"
+    ]
+  }
+}

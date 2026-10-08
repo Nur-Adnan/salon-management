@@ -1,0 +1,6 @@
+{
+  "name": "specialist-agents",
+  "version": "1.0.0",
+  "description": "Production-grade specialist subagents for architecture, frontend, backend, QA, security, performance, code review, debugging, and production audit",
+  "author": "Antigravity Engineering Team"
+}
