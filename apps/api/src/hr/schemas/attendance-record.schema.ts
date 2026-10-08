@@ -31,6 +31,15 @@ export class AttendanceRecord {
   @Prop({ type: String, trim: true, default: null })
   note!: string | null;
 
+  @Prop({ type: Number, default: 0 })
+  breakMinutes!: number;
+
+  @Prop({ type: Number, default: 0 })
+  regularHours!: number;
+
+  @Prop({ type: Number, default: 0 })
+  overtimeHours!: number;
+
   @Prop({ type: Types.ObjectId, default: null })
   payslipId!: Types.ObjectId | null;
 }

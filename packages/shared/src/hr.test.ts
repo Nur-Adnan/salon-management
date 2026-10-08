@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { commissionOf, distributeTip, payrollTotals, shiftHours } from './hr.js';
+import {
+  calculateServiceCommission,
+  calculateShiftHoursWithBreaks,
+  calculateTieredCommission,
+  commissionOf,
+  distributeTip,
+  payrollTotals,
+  shiftHours,
+} from './hr.js';
 import { money } from './money.js';
 
 describe('commissionOf', () => {
@@ -15,6 +23,50 @@ describe('commissionOf', () => {
   it('rejects a negative or non-integer rate', () => {
     expect(() => commissionOf(money(1000), -1)).toThrow(RangeError);
     expect(() => commissionOf(money(1000), 1.5)).toThrow(RangeError);
+  });
+
+  describe('calculateTieredCommission', () => {
+    it('falls back to defaultRateBps when no tiers provided', () => {
+      const comm = calculateTieredCommission(money(10_000), [], 1000);
+      expect(comm.amount).toBe(1000); // 10%
+    });
+
+    it('calculates tiered commission across progressive brackets', () => {
+      // Bracket 1: 0 - 5,000 at 5% (500 bps) -> 250
+      // Bracket 2: 5,000 - 15,000 at 10% (1000 bps) -> 1,000
+      // Bracket 3: Above 15,000 at 20% (2000 bps)
+      const tiers = [
+        { upToMinor: 5000, rateBps: 500 },
+        { upToMinor: 15000, rateBps: 1000 },
+        { upToMinor: Infinity, rateBps: 2000 },
+      ];
+
+      // Case A: 4,000 (falls entirely in tier 1)
+      expect(calculateTieredCommission(money(4000), tiers, 0).amount).toBe(200); // 4000 * 5%
+
+      // Case B: 10,000 (5,000 @ 5% + 5,000 @ 10%) = 250 + 500 = 750
+      expect(calculateTieredCommission(money(10000), tiers, 0).amount).toBe(750);
+
+      // Case C: 20,000 (5,000 @ 5% + 10,000 @ 10% + 5,000 @ 20%) = 250 + 1000 + 1000 = 2250
+      expect(calculateTieredCommission(money(20000), tiers, 0).amount).toBe(2250);
+    });
+  });
+
+  describe('calculateServiceCommission', () => {
+    it('uses fixed commission amount when set', () => {
+      const comm = calculateServiceCommission(money(10_000), { serviceId: 's1', fixedAmountMinor: 350 }, 1000);
+      expect(comm.amount).toBe(350);
+    });
+
+    it('uses per-service rateBps when set', () => {
+      const comm = calculateServiceCommission(money(10_000), { serviceId: 's1', rateBps: 1500 }, 1000);
+      expect(comm.amount).toBe(1500); // 15%
+    });
+
+    it('falls back to defaultRateBps when no override rule matches', () => {
+      const comm = calculateServiceCommission(money(10_000), null, 1000);
+      expect(comm.amount).toBe(1000); // 10%
+    });
   });
 });
 
@@ -88,6 +140,30 @@ describe('shiftHours', () => {
     const clockIn = new Date('2026-01-01T09:00:00Z');
     const clockOut = new Date('2026-01-01T08:00:00Z');
     expect(shiftHours(clockIn, clockOut)).toBe(0);
+  });
+
+  describe('calculateShiftHoursWithBreaks', () => {
+    it('deducts break minutes and calculates regular and overtime hours', () => {
+      const clockIn = new Date('2026-01-01T09:00:00Z');
+      const clockOut = new Date('2026-01-01T19:00:00Z'); // 10 raw hours
+      const details = calculateShiftHoursWithBreaks(clockIn, clockOut, 60, 8); // 1h break, 8h threshold
+      expect(details.rawHours).toBe(10);
+      expect(details.breakHours).toBe(1);
+      expect(details.netHours).toBe(9);
+      expect(details.regularHours).toBe(8);
+      expect(details.overtimeHours).toBe(1);
+    });
+
+    it('handles shift with no overtime', () => {
+      const clockIn = new Date('2026-01-01T09:00:00Z');
+      const clockOut = new Date('2026-01-01T17:00:00Z'); // 8 raw hours
+      const details = calculateShiftHoursWithBreaks(clockIn, clockOut, 30, 8); // 0.5h break -> 7.5h net
+      expect(details.rawHours).toBe(8);
+      expect(details.breakHours).toBe(0.5);
+      expect(details.netHours).toBe(7.5);
+      expect(details.regularHours).toBe(7.5);
+      expect(details.overtimeHours).toBe(0);
+    });
   });
 });
 

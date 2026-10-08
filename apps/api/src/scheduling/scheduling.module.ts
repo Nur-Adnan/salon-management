@@ -16,6 +16,8 @@ import { PublicBookingController } from './public-booking.controller.js';
 import { StaffController } from './staff.controller.js';
 import { Appointment, AppointmentSchema } from './schemas/appointment.schema.js';
 import { SlotReservation, SlotReservationSchema } from './schemas/slot-reservation.schema.js';
+import { StaffLeave, StaffLeaveSchema } from './schemas/staff-leave.schema.js';
+import { StaffShift, StaffShiftSchema } from './schemas/staff-shift.schema.js';
 import { WaitlistEntry, WaitlistEntrySchema } from './schemas/waitlist.schema.js';
 import { WaitlistController } from './waitlist.controller.js';
 import { WaitlistService } from './waitlist.service.js';
@@ -35,6 +37,8 @@ import { WaitlistService } from './waitlist.service.js';
       { name: Membership.name, schema: MembershipSchema },
       { name: Organization.name, schema: OrganizationSchema },
       { name: User.name, schema: UserSchema },
+      { name: StaffShift.name, schema: StaffShiftSchema },
+      { name: StaffLeave.name, schema: StaffLeaveSchema },
     ]),
   ],
   controllers: [AppointmentsController, WaitlistController, PublicBookingController, StaffController],

@@ -1,16 +1,24 @@
-import { Body, Controller, Get, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
 import {
   type CreateStockAdjustment,
-  type SetReorderPoint,
-  type SetStock,
   createStockAdjustmentSchema,
+  type CreateStockBatch,
+  createStockBatchSchema,
+  type CreateStockTransfer,
+  createStockTransferSchema,
+  type SetReorderPoint,
   setReorderPointSchema,
+  type SetStock,
   setStockSchema,
 } from '@salon/shared';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe.js';
 import { CheckAbility } from '../iam/casl/check-ability.decorator.js';
+import {
+  serializeStockAdjustment,
+  serializeStockLevel,
+  serializeStockMovement,
+} from './inventory.mappers.js';
 import { InventoryService } from './inventory.service.js';
-import { serializeStockAdjustment, serializeStockLevel, serializeStockMovement } from './inventory.mappers.js';
 
 @Controller('inventory')
 export class InventoryController {
@@ -56,5 +64,111 @@ export class InventoryController {
   @CheckAbility('read', 'Inventory')
   async lowStock() {
     return (await this.inventory.lowStock()).map(serializeStockLevel);
+  }
+
+  // --- Batches ---
+
+  @Post('batches')
+  @CheckAbility('manage', 'Inventory')
+  async createBatch(@Body(new ZodValidationPipe(createStockBatchSchema)) dto: CreateStockBatch) {
+    const b = await this.inventory.createBatch(dto);
+    return {
+      id: String(b._id),
+      branchId: String(b.branchId),
+      productId: String(b.productId),
+      batchNumber: b.batchNumber,
+      expiryDate: b.expiryDate.toISOString().slice(0, 10),
+      qtyOnHand: b.qtyOnHand,
+      unitCostMinor: b.unitCostMinor,
+    };
+  }
+
+  @Get('batches')
+  @CheckAbility('read', 'Inventory')
+  async listBatches(@Query('productId') productId?: string) {
+    const list = await this.inventory.listBatches(productId);
+    return list.map((b) => ({
+      id: String(b._id),
+      branchId: String(b.branchId),
+      productId: String(b.productId),
+      batchNumber: b.batchNumber,
+      expiryDate: b.expiryDate.toISOString().slice(0, 10),
+      qtyOnHand: b.qtyOnHand,
+      unitCostMinor: b.unitCostMinor,
+    }));
+  }
+
+  // --- Inter-Branch Stock Transfers ---
+
+  @Post('transfers')
+  @CheckAbility('manage', 'Inventory')
+  async createTransfer(@Body(new ZodValidationPipe(createStockTransferSchema)) dto: CreateStockTransfer) {
+    const t = await this.inventory.createTransfer(dto);
+    return {
+      id: String(t._id),
+      transferNumber: t.transferNumber,
+      fromBranchId: String(t.fromBranchId),
+      toBranchId: String(t.toBranchId),
+      status: t.status,
+      lines: t.lines.map((l) => ({
+        productId: String(l.productId),
+        quantity: l.quantity,
+        batchNumber: l.batchNumber,
+      })),
+      note: t.note,
+    };
+  }
+
+  @Get('transfers')
+  @CheckAbility('read', 'Inventory')
+  async listTransfers(@Query('status') status?: string) {
+    const list = await this.inventory.listTransfers(status);
+    return list.map((t) => ({
+      id: String(t._id),
+      transferNumber: t.transferNumber,
+      fromBranchId: String(t.fromBranchId),
+      toBranchId: String(t.toBranchId),
+      status: t.status,
+      lines: t.lines.map((l) => ({
+        productId: String(l.productId),
+        quantity: l.quantity,
+        batchNumber: l.batchNumber,
+      })),
+      note: t.note,
+      shippedAt: t.shippedAt?.toISOString() ?? null,
+      receivedAt: t.receivedAt?.toISOString() ?? null,
+    }));
+  }
+
+  @Post('transfers/:id/dispatch')
+  @CheckAbility('manage', 'Inventory')
+  async dispatchTransfer(@Param('id') id: string) {
+    const t = await this.inventory.dispatchTransfer(id);
+    return {
+      id: String(t._id),
+      status: t.status,
+      shippedAt: t.shippedAt?.toISOString() ?? null,
+    };
+  }
+
+  @Post('transfers/:id/receive')
+  @CheckAbility('manage', 'Inventory')
+  async receiveTransfer(@Param('id') id: string) {
+    const t = await this.inventory.receiveTransfer(id);
+    return {
+      id: String(t._id),
+      status: t.status,
+      receivedAt: t.receivedAt?.toISOString() ?? null,
+    };
+  }
+
+  @Post('transfers/:id/cancel')
+  @CheckAbility('manage', 'Inventory')
+  async cancelTransfer(@Param('id') id: string) {
+    const t = await this.inventory.cancelTransfer(id);
+    return {
+      id: String(t._id),
+      status: t.status,
+    };
   }
 }

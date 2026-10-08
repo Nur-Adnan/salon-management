@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import type { UpdateAttendance } from '@salon/shared';
+import { calculateShiftHoursWithBreaks, type UpdateAttendance } from '@salon/shared';
 import { type Model, Types } from 'mongoose';
 import { RequestContextService } from '../common/context/request-context.service.js';
 import { isDuplicateKeyError } from '../common/mongo.util.js';
@@ -52,20 +52,35 @@ export class AttendanceService {
     }
   }
 
-  async clockOut(staffId: string | undefined): Promise<AttendanceRecordDocument> {
+  async clockOut(staffId: string | undefined, breakMinutes = 0): Promise<AttendanceRecordDocument> {
     const { tenantId, userId } = this.scope();
     const targetId = staffId ?? userId;
     if (!targetId) throw new ForbiddenException('no active user to clock out');
     assertSelfOrManage(this.abilities.forCurrentContext(), 'Attendance', userId, targetId);
 
+    const now = new Date();
+    const openRecord = await this.attendance
+      .findOne({ tenantId, staffId: new Types.ObjectId(targetId), clockOut: null })
+      .exec();
+    if (!openRecord) throw new BadRequestException('no open shift for this staff member');
+
+    const details = calculateShiftHoursWithBreaks(openRecord.clockIn, now, breakMinutes, 8);
+
     const rec = await this.attendance
       .findOneAndUpdate(
-        { tenantId, staffId: new Types.ObjectId(targetId), clockOut: null },
-        { $set: { clockOut: new Date() } },
+        { _id: openRecord._id, clockOut: null },
+        {
+          $set: {
+            clockOut: now,
+            breakMinutes,
+            regularHours: details.regularHours,
+            overtimeHours: details.overtimeHours,
+          },
+        },
         { new: true },
       )
       .exec();
-    if (!rec) throw new BadRequestException('no open shift for this staff member');
+    if (!rec) throw new BadRequestException('shift was already closed');
     return rec;
   }
 

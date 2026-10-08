@@ -454,13 +454,91 @@ export type RenewSubscription = z.infer<typeof renewSubscriptionSchema>;
 // All three rates default to 0 (= "not configured yet"), so a staff member
 // with no compensation profile earns nothing rather than erroring — see
 // StaffCompensation in the API layer for the lazy-upsert-on-first-PATCH.
+export const commissionTierSchema = z.object({
+  upToMinor: z.number().int().positive(),
+  rateBps: z.number().int().min(0).max(10000),
+});
+export type CommissionTierInput = z.infer<typeof commissionTierSchema>;
+
+export const serviceCommissionOverrideSchema = z.object({
+  serviceId: objectIdSchema,
+  rateBps: z.number().int().min(0).max(10000).optional(),
+  fixedAmountMinor: z.number().int().nonnegative().optional(),
+});
+export type ServiceCommissionOverrideInput = z.infer<typeof serviceCommissionOverrideSchema>;
+
 export const setCompensationSchema = z.object({
   commissionRateBps: z.number().int().min(0).max(10000).optional(),
+  commissionTiers: z.array(commissionTierSchema).optional(),
+  serviceCommissionOverrides: z.array(serviceCommissionOverrideSchema).optional(),
   baseSalaryMinor: z.number().int().nonnegative().optional(),
   hourlyRateMinor: z.number().int().nonnegative().optional(),
+  dailyOvertimeThresholdHours: z.number().min(1).max(24).optional(),
   note: z.string().trim().max(300).nullable().optional(),
 });
 export type SetCompensation = z.infer<typeof setCompensationSchema>;
+
+// --- Stage B Refinements ---
+
+export const shiftBreakSchema = z.object({
+  start: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'HH:mm format'),
+  end: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'HH:mm format'),
+  description: z.string().trim().max(100).optional(),
+});
+
+export const staffShiftSchema = z.object({
+  staffId: objectIdSchema,
+  branchId: objectIdSchema,
+  dayOfWeek: z.number().int().min(0).max(6), // 0=Sun..6=Sat
+  open: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'HH:mm format'),
+  close: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, 'HH:mm format'),
+  breaks: z.array(shiftBreakSchema).default([]),
+  isOff: z.boolean().default(false),
+});
+export type StaffShiftInput = z.infer<typeof staffShiftSchema>;
+
+export const staffLeaveSchema = z.object({
+  staffId: objectIdSchema,
+  startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD format'),
+  endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD format'),
+  reason: z.string().trim().max(300).optional(),
+  status: z.enum(['pending', 'approved', 'rejected']).default('approved'),
+});
+export type StaffLeaveInput = z.infer<typeof staffLeaveSchema>;
+
+export const branchPriceOverrideSchema = z.object({
+  branchId: objectIdSchema,
+  itemType: z.enum(['service', 'product']),
+  itemId: objectIdSchema,
+  priceMinor: z.number().int().nonnegative(),
+});
+export type BranchPriceOverrideInput = z.infer<typeof branchPriceOverrideSchema>;
+
+export const createStockBatchSchema = z.object({
+  branchId: objectIdSchema,
+  productId: objectIdSchema,
+  batchNumber: z.string().trim().min(1).max(80),
+  expiryDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'YYYY-MM-DD format'),
+  qtyOnHand: z.number().int().positive(),
+  unitCostMinor: z.number().int().nonnegative(),
+});
+export type CreateStockBatch = z.infer<typeof createStockBatchSchema>;
+
+export const createStockTransferSchema = z.object({
+  fromBranchId: objectIdSchema,
+  toBranchId: objectIdSchema,
+  lines: z
+    .array(
+      z.object({
+        productId: objectIdSchema,
+        quantity: z.number().int().positive(),
+        batchNumber: z.string().trim().optional(),
+      }),
+    )
+    .min(1),
+  note: z.string().trim().max(300).optional(),
+});
+export type CreateStockTransfer = z.infer<typeof createStockTransferSchema>;
 
 // staffId omitted = clock the caller themself in/out; an explicit staffId
 // requires 'manage' on Attendance (front-desk clocking someone else in).

@@ -1,7 +1,13 @@
 import { Logger } from '@nestjs/common';
 import { EventsHandler, type IEventHandler } from '@nestjs/cqrs';
 import { InjectModel } from '@nestjs/mongoose';
-import { commissionOf, distributeTip, money } from '@salon/shared';
+import {
+  calculateServiceCommission,
+  calculateTieredCommission,
+  commissionOf,
+  distributeTip,
+  money,
+} from '@salon/shared';
 import { type Model, Types } from 'mongoose';
 import { isDuplicateKeyError } from '../../common/mongo.util.js';
 import { SaleCompleted } from '../../pos/events.js';
@@ -58,11 +64,57 @@ export class HrSaleCompletedHandler implements IEventHandler<SaleCompleted> {
       for (const [staffIdStr, net] of netByStaff) {
         const staffId = new Types.ObjectId(staffIdStr);
         const comp = await this.compensation.findOne({ tenantId, userId: staffId }).exec();
-        const rateBps = comp?.commissionRateBps ?? 0;
-        if (rateBps <= 0) continue;
-        const amountMinor = commissionOf(money(net), rateBps).amount;
-        if (amountMinor <= 0) continue;
-        await this.createEntry({ tenantId, branchId, staffId, saleId, kind: 'commission', amountMinor, rateBps });
+        const defaultRateBps = comp?.commissionRateBps ?? 0;
+
+        let staffCommission = 0;
+        let generalNet = 0;
+
+        const staffLines = sale.lines.filter((l) => l.staffId && String(l.staffId) === staffIdStr);
+        for (const l of staffLines) {
+          const lineNet = l.lineTotal.amount - l.tax.amount;
+          if (lineNet <= 0) continue;
+
+          const override = comp?.serviceOverrides?.find(
+            (o) => String(o.serviceId) === String(l.refId),
+          );
+
+          if (override && (override.fixedAmountMinor != null || override.rateBps != null)) {
+            staffCommission += calculateServiceCommission(
+              money(lineNet),
+              {
+                serviceId: String(override.serviceId),
+                rateBps: override.rateBps ?? undefined,
+                fixedAmountMinor: override.fixedAmountMinor ?? undefined,
+              },
+              defaultRateBps,
+            ).amount;
+          } else {
+            generalNet += lineNet;
+          }
+        }
+
+        if (generalNet > 0) {
+          if (comp?.commissionTiers && comp.commissionTiers.length > 0) {
+            staffCommission += calculateTieredCommission(
+              money(generalNet),
+              comp.commissionTiers,
+              defaultRateBps,
+            ).amount;
+          } else if (defaultRateBps > 0) {
+            staffCommission += commissionOf(money(generalNet), defaultRateBps).amount;
+          }
+        }
+
+        if (staffCommission <= 0) continue;
+        await this.createEntry({
+          tenantId,
+          branchId,
+          staffId,
+          saleId,
+          kind: 'commission',
+          amountMinor: staffCommission,
+          rateBps: defaultRateBps,
+        });
       }
 
       if (sale.tip.amount > 0) {

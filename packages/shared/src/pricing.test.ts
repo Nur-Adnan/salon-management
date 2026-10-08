@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { money } from './money.js';
-import { componentsTotal, packageSavings } from './pricing.js';
+import { componentsTotal, packageSavings, resolveEffectivePrice } from './pricing.js';
 
 describe('package pricing', () => {
   it('sums price × quantity across components', () => {
@@ -28,5 +28,19 @@ describe('package pricing', () => {
 
   it('rejects fractional quantity (no float prices)', () => {
     expect(() => componentsTotal([{ price: money(500), quantity: 1.5 }])).toThrow();
+  });
+
+  describe('resolveEffectivePrice', () => {
+    it('uses override price when provided', () => {
+      const base = money(1000);
+      const override = money(1200);
+      expect(resolveEffectivePrice(base, override).amount).toBe(1200);
+    });
+
+    it('falls back to base price when override is null or undefined', () => {
+      const base = money(1000);
+      expect(resolveEffectivePrice(base, null).amount).toBe(1000);
+      expect(resolveEffectivePrice(base, undefined).amount).toBe(1000);
+    });
   });
 });

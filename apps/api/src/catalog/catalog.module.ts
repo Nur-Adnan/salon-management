@@ -17,6 +17,12 @@ import { ServiceCategory, ServiceCategorySchema } from './schemas/service-catego
 import { Service, ServiceSchema } from './schemas/service.schema.js';
 import { ServicesController } from './services.controller.js';
 
+import { BranchPriceController } from './branch-price.controller.js';
+import {
+  BranchPriceOverride,
+  BranchPriceOverrideSchema,
+} from './schemas/branch-price-override.schema.js';
+
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -25,9 +31,10 @@ import { ServicesController } from './services.controller.js';
       { name: ProductCategory.name, schema: ProductCategorySchema },
       { name: Product.name, schema: ProductSchema },
       { name: Package.name, schema: PackageSchema },
+      { name: BranchPriceOverride.name, schema: BranchPriceOverrideSchema },
     ]),
   ],
-  controllers: [ServicesController, ProductsController, PackagesController],
+  controllers: [ServicesController, ProductsController, PackagesController, BranchPriceController],
   providers: [
     ServiceCategoryRepository,
     ServiceRepository,
@@ -36,5 +43,6 @@ import { ServicesController } from './services.controller.js';
     PackageRepository,
     PackagesService,
   ],
+  exports: [MongooseModule],
 })
 export class CatalogModule {}

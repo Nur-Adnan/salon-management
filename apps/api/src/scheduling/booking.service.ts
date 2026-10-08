@@ -21,6 +21,8 @@ import { Resource, type ResourceDocument } from '../resources/resource.schema.js
 import { AppointmentCreated } from './events.js';
 import { type AppointmentLine, Appointment, type AppointmentDocument } from './schemas/appointment.schema.js';
 import { SlotReservation, type SlotReservationDocument } from './schemas/slot-reservation.schema.js';
+import { StaffLeave, type StaffLeaveDocument } from './schemas/staff-leave.schema.js';
+import { StaffShift, type StaffShiftDocument } from './schemas/staff-shift.schema.js';
 import { MINUTE_MS, occupiedSlots } from './slots.util.js';
 import { dayBoundaries } from './time.util.js';
 
@@ -44,6 +46,8 @@ export class BookingService {
     @InjectModel(Resource.name) private readonly resources: Model<ResourceDocument>,
     @InjectModel(Branch.name) private readonly branches: Model<BranchDocument>,
     @InjectModel(Membership.name) private readonly memberships: Model<MembershipDocument>,
+    @InjectModel(StaffShift.name) private readonly shifts: Model<StaffShiftDocument>,
+    @InjectModel(StaffLeave.name) private readonly leaves: Model<StaffLeaveDocument>,
     private readonly customers: CustomerRepository,
     private readonly ctx: RequestContextService,
     private readonly eventBus: EventBus,
@@ -165,12 +169,51 @@ export class BookingService {
         .findOne({ _id: new Types.ObjectId(lineIn.serviceId), tenantId, deletedAt: null })
         .exec();
       if (!service) throw new BadRequestException('unknown service');
+      if (service.eligibleStaffIds && service.eligibleStaffIds.length > 0) {
+        const isEligible = service.eligibleStaffIds.some((id) => String(id) === lineIn.staffId);
+        if (!isEligible) throw new BadRequestException('selected staff is not eligible for this service');
+      }
       await this.assertStaffMember(tenantId, lineIn.staffId);
 
       const startMs = new Date(lineIn.start).getTime();
       if (Number.isNaN(startMs)) throw new BadRequestException('invalid start time');
       const endMs = startMs + service.durationMin * MINUTE_MS;
       this.assertWithinHours(branch, startMs, endMs);
+
+      // Verify staff leave and shift breaks
+      const dt = DateTime.fromMillis(startMs, { zone: branch.timezone });
+      const dateYMD = dt.toISODate();
+      if (dateYMD) {
+        const onLeave = await this.leaves
+          .findOne({
+            tenantId,
+            staffId: new Types.ObjectId(lineIn.staffId),
+            status: 'approved',
+            startDate: { $lte: dateYMD },
+            endDate: { $gte: dateYMD },
+          })
+          .exec();
+        if (onLeave) throw new BadRequestException('staff member is on leave on this date');
+
+        const shift = await this.shifts
+          .findOne({
+            tenantId,
+            branchId,
+            staffId: new Types.ObjectId(lineIn.staffId),
+            dayOfWeek: dt.weekday % 7,
+          })
+          .exec();
+        if (shift) {
+          if (shift.isOff) throw new BadRequestException('staff member is off duty on this day');
+          for (const brk of shift.breaks || []) {
+            const bStart = DateTime.fromISO(`${dateYMD}T${brk.start}`, { zone: branch.timezone }).toMillis();
+            const bEnd = DateTime.fromISO(`${dateYMD}T${brk.end}`, { zone: branch.timezone }).toMillis();
+            if (startMs < bEnd && endMs > bStart) {
+              throw new BadRequestException('appointment overlaps with staff break time');
+            }
+          }
+        }
+      }
 
       const slots = occupiedSlots(
         startMs - service.bufferBeforeMin * MINUTE_MS,

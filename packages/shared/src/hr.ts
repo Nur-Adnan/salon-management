@@ -16,6 +16,66 @@ export function commissionOf(netAmount: Money, rateBps: number): Money {
   return money(Math.round((netAmount.amount * rateBps) / 10000));
 }
 
+export interface CommissionTier {
+  upToMinor: number; // Upper bound of this bracket in minor units (e.g. 500000 poisha). Infinity for top tier.
+  rateBps: number; // Basis points for revenue within this bracket.
+}
+
+/**
+ * Computes commission using progressive tiered brackets (like tax brackets).
+ * Slices net amount across tiers in ascending order.
+ * Falls back to defaultRateBps if tiers list is empty.
+ */
+export function calculateTieredCommission(
+  netAmount: Money,
+  tiers: CommissionTier[],
+  defaultRateBps: number,
+): Money {
+  if (!tiers || tiers.length === 0) {
+    return commissionOf(netAmount, defaultRateBps);
+  }
+
+  const sortedTiers = [...tiers].sort((a, b) => a.upToMinor - b.upToMinor);
+  let remaining = netAmount.amount;
+  let prevThreshold = 0;
+  let totalCommission = 0;
+
+  for (const tier of sortedTiers) {
+    if (remaining <= 0) break;
+    const bracketSize = tier.upToMinor - prevThreshold;
+    const taxableInBracket = Math.min(remaining, bracketSize);
+    totalCommission += Math.round((taxableInBracket * tier.rateBps) / 10000);
+    remaining -= taxableInBracket;
+    prevThreshold = tier.upToMinor;
+  }
+
+  return money(totalCommission);
+}
+
+export interface ServiceCommissionRule {
+  serviceId: string;
+  rateBps?: number;
+  fixedAmountMinor?: number;
+}
+
+/**
+ * Computes commission for a specific service line, checking for fixed or percentage overrides.
+ */
+export function calculateServiceCommission(
+  netAmount: Money,
+  rule: ServiceCommissionRule | null | undefined,
+  defaultRateBps: number,
+): Money {
+  if (!rule) {
+    return commissionOf(netAmount, defaultRateBps);
+  }
+  if (rule.fixedAmountMinor != null && rule.fixedAmountMinor >= 0) {
+    return money(rule.fixedAmountMinor);
+  }
+  const rate = rule.rateBps != null && rule.rateBps >= 0 ? rule.rateBps : defaultRateBps;
+  return commissionOf(netAmount, rate);
+}
+
 // --- Tip distribution ---
 export interface TippableLine {
   staffId: string;
@@ -67,6 +127,42 @@ export function distributeTip(lines: TippableLine[], tip: Money): Map<string, Mo
 /** Decimal hours between two instants (fractional, e.g. 7.5 = 7h30m). */
 export function shiftHours(clockIn: Date, clockOut: Date): number {
   return Math.max(0, (clockOut.getTime() - clockIn.getTime()) / 3_600_000);
+}
+
+export interface ShiftHoursDetails {
+  rawHours: number;
+  breakHours: number;
+  netHours: number;
+  regularHours: number;
+  overtimeHours: number;
+}
+
+/**
+ * Calculates attendance hours with break deductions and overtime split.
+ * @param clockIn Start of shift
+ * @param clockOut End of shift
+ * @param breakMinutes Total break time in minutes (e.g. 60 for 1h lunch)
+ * @param dailyOvertimeThresholdHours Daily standard threshold (default 8h)
+ */
+export function calculateShiftHoursWithBreaks(
+  clockIn: Date,
+  clockOut: Date,
+  breakMinutes = 0,
+  dailyOvertimeThresholdHours = 8,
+): ShiftHoursDetails {
+  const rawHours = shiftHours(clockIn, clockOut);
+  const breakHours = Math.max(0, breakMinutes / 60);
+  const netHours = Math.max(0, rawHours - breakHours);
+  const regularHours = Math.min(netHours, dailyOvertimeThresholdHours);
+  const overtimeHours = Math.max(0, netHours - regularHours);
+
+  return {
+    rawHours: Number(rawHours.toFixed(4)),
+    breakHours: Number(breakHours.toFixed(4)),
+    netHours: Number(netHours.toFixed(4)),
+    regularHours: Number(regularHours.toFixed(4)),
+    overtimeHours: Number(overtimeHours.toFixed(4)),
+  };
 }
 
 // --- Payroll ---

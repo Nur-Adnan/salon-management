@@ -14,3 +14,14 @@ export function componentsTotal(components: PricedComponent[]): Money {
 export function packageSavings(total: Money, packagePrice: Money): Money {
   return subtract(total, packagePrice);
 }
+
+/**
+ * Resolves effective price: uses branch-specific override if present and non-negative,
+ * otherwise falls back to base catalog price.
+ */
+export function resolveEffectivePrice(basePrice: Money, overridePrice?: Money | null): Money {
+  if (overridePrice != null && overridePrice.amount >= 0) {
+    return overridePrice;
+  }
+  return basePrice;
+}

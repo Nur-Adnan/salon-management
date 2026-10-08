@@ -32,6 +32,9 @@ export class Service {
   @Prop({ type: [String], default: [], enum: [...RESOURCE_TYPES] })
   eligibleResourceTypes!: ResourceType[];
 
+  @Prop({ type: [Types.ObjectId], default: [] })
+  eligibleStaffIds!: Types.ObjectId[];
+
   @Prop({ type: Boolean, default: true })
   active!: boolean;
 

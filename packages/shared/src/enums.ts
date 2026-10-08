@@ -166,9 +166,25 @@ export type StaffEarningKind = (typeof STAFF_EARNING_KINDS)[number];
 // --- Phase 7: Inventory & Suppliers ---
 
 // Every StockMovement records WHY qtyOnHand changed. 'sale'/'void' come from POS,
-// 'purchase' from a received purchase order, 'adjustment' from a manual correction.
-export const STOCK_MOVEMENT_REASONS = ['sale', 'void', 'purchase', 'adjustment'] as const;
+// 'purchase' from a received purchase order, 'adjustment' from a manual correction,
+// 'transfer_in' / 'transfer_out' from inter-branch inventory transfers.
+export const STOCK_MOVEMENT_REASONS = [
+  'sale',
+  'void',
+  'purchase',
+  'adjustment',
+  'transfer_in',
+  'transfer_out',
+] as const;
 export type StockMovementReason = (typeof STOCK_MOVEMENT_REASONS)[number];
+
+// An inter-branch stock transfer lifecycle.
+export const STOCK_TRANSFER_STATUS = ['draft', 'in_transit', 'received', 'cancelled'] as const;
+export type StockTransferStatus = (typeof STOCK_TRANSFER_STATUS)[number];
+
+// Staff leave request status.
+export const LEAVE_STATUS = ['pending', 'approved', 'rejected'] as const;
+export type LeaveStatus = (typeof LEAVE_STATUS)[number];
 
 // A purchase order is immutable once received (stock has moved).
 export const PURCHASE_ORDER_STATUS = ['draft', 'received', 'cancelled'] as const;

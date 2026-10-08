@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { type PayrollAdjustment, payrollTotals, shiftHours } from '@salon/shared';
+import { calculateShiftHoursWithBreaks, type PayrollAdjustment, payrollTotals, shiftHours } from '@salon/shared';
 import { type Connection, type Model, Types } from 'mongoose';
 import { RequestContextService } from '../common/context/request-context.service.js';
 import { isDuplicateKeyError } from '../common/mongo.util.js';
@@ -112,7 +112,10 @@ export class PayrollService {
           )
           .exec();
         const claimedShifts = await this.attendance.find({ tenantId, payslipId }).session(session).exec();
-        const hoursWorked = claimedShifts.reduce((sum, s) => sum + shiftHours(s.clockIn, s.clockOut as Date), 0);
+        const hoursWorked = claimedShifts.reduce((sum, s) => {
+          const breakMins = s.breakMinutes ?? 0;
+          return sum + calculateShiftHoursWithBreaks(s.clockIn, s.clockOut as Date, breakMins).netHours;
+        }, 0);
 
         const comp = await this.compensation.findOne({ tenantId, userId: staffObjectId }).session(session).exec();
         const baseSalaryMinor = comp?.baseSalaryMinor ?? 0;
