@@ -150,6 +150,8 @@ export const SUBJECTS = [
   'Inventory',
   'Supplier',
   'Report',
+  'Notification',
+  'Campaign',
   'all',
 ] as const;
 export type Subject = (typeof SUBJECTS)[number];
@@ -199,3 +201,37 @@ export type StockAdjustmentReason = (typeof STOCK_ADJUSTMENT_REASONS)[number];
 // Time-bucket granularity for the sales report.
 export const REPORT_GROUP_BY = ['day', 'week', 'month'] as const;
 export type ReportGroupBy = (typeof REPORT_GROUP_BY)[number];
+
+// --- Phase 10: Notifications & Reminders ---
+
+export const NOTIFICATION_CHANNELS = ['sms', 'whatsapp', 'email'] as const;
+export type NotificationChannel = (typeof NOTIFICATION_CHANNELS)[number];
+
+export const NOTIFICATION_STATUS = ['queued', 'sent', 'delivered', 'failed', 'skipped'] as const;
+export type NotificationStatus = (typeof NOTIFICATION_STATUS)[number];
+
+export const NOTIFICATION_TEMPLATES = [
+  'appointment_reminder_24h',
+  'appointment_reminder_2h',
+  'appointment_confirmation',
+  'appointment_rescheduled',
+  'appointment_cancelled',
+  'subscription_renewal_upcoming',
+  'subscription_renewal_failed',
+  'subscription_expired',
+  'gift_card_expiry_warning',
+  'campaign_broadcast',
+] as const;
+export type NotificationTemplate = (typeof NOTIFICATION_TEMPLATES)[number];
+
+// --- Phase 9: Marketing & Campaigns ---
+
+export const CAMPAIGN_STATUS = ['draft', 'scheduled', 'running', 'completed', 'cancelled'] as const;
+export type CampaignStatus = (typeof CAMPAIGN_STATUS)[number];
+
+export const CAMPAIGN_CHANNELS = ['sms', 'whatsapp', 'email'] as const;
+export type CampaignChannel = (typeof CAMPAIGN_CHANNELS)[number];
+
+export const CAMPAIGN_AUDIENCE_TYPES = ['all', 'segment', 'custom'] as const;
+export type CampaignAudienceType = (typeof CAMPAIGN_AUDIENCE_TYPES)[number];
+

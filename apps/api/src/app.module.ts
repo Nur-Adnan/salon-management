@@ -22,6 +22,7 @@ import { type Env, validateEnv } from './config/env.js';
 import { AbilitiesGuard } from './iam/casl/abilities.guard.js';
 import { JwtAuthGuard } from './iam/auth/jwt-auth.guard.js';
 import { IamModule } from './iam/iam.module.js';
+import { NotificationsModule } from './notifications/notifications.module.js';
 import { HealthModule } from './health/health.module.js';
 import { PingModule } from './ping/ping.module.js';
 import { QueueModule } from './queue/queue.module.js';
@@ -79,6 +80,7 @@ import { RedisModule } from './infra/redis/redis.module.js';
     InventoryModule,
     SuppliersModule,
     ReportsModule,
+    NotificationsModule,
     HealthModule,
     PingModule,
   ],

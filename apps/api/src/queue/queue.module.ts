@@ -2,7 +2,13 @@ import { BullModule, InjectQueue } from '@nestjs/bullmq';
 import { Global, Logger, Module, type OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import type { Queue } from 'bullmq';
-import { SAMPLE_QUEUE, redisConnectionFromUrl } from './queue.constants.js';
+import {
+  CAMPAIGN_QUEUE,
+  NOTIFICATION_QUEUE,
+  REMINDER_QUEUE,
+  SAMPLE_QUEUE,
+  redisConnectionFromUrl,
+} from './queue.constants.js';
 import { SampleProcessor } from './sample.processor.js';
 
 @Global()
@@ -16,7 +22,12 @@ import { SampleProcessor } from './sample.processor.js';
         ),
       }),
     }),
-    BullModule.registerQueue({ name: SAMPLE_QUEUE }),
+    BullModule.registerQueue(
+      { name: SAMPLE_QUEUE },
+      { name: NOTIFICATION_QUEUE },
+      { name: REMINDER_QUEUE },
+      { name: CAMPAIGN_QUEUE },
+    ),
   ],
   providers: [SampleProcessor],
   exports: [BullModule],

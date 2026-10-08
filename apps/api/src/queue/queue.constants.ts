@@ -1,4 +1,7 @@
 export const SAMPLE_QUEUE = 'sample';
+export const NOTIFICATION_QUEUE = 'notifications';
+export const REMINDER_QUEUE = 'reminders';
+export const CAMPAIGN_QUEUE = 'campaigns';
 
 // BullMQ wants a ConnectionOptions object, not a URL string. Parse the URL once.
 export function redisConnectionFromUrl(url: string) {
