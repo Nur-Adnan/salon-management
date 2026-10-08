@@ -217,8 +217,11 @@ export const NOTIFICATION_TEMPLATES = [
   'appointment_rescheduled',
   'appointment_cancelled',
   'subscription_renewal_upcoming',
+  'subscription_renewed',
   'subscription_renewal_failed',
+  'subscription_payment_failed',
   'subscription_expired',
+  'subscription_cancelled_payment_failure',
   'gift_card_expiry_warning',
   'campaign_broadcast',
 ] as const;

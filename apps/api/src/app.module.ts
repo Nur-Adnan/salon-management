@@ -31,6 +31,8 @@ import { QueueModule } from './queue/queue.module.js';
 import { ResourcesModule } from './resources/resources.module.js';
 import { SuppliersModule } from './suppliers/suppliers.module.js';
 import { RedisModule } from './infra/redis/redis.module.js';
+import { RateLimitModule } from './common/rate-limit/rate-limit.module.js';
+import { StorageModule } from './infra/storage/storage.module.js';
 
 @Module({
   imports: [
@@ -53,7 +55,22 @@ import { RedisModule } from './infra/redis/redis.module.js';
         customProps: (req: IncomingMessage) => ({
           tenantId: (req.headers['x-tenant-id'] as string) ?? 'public',
         }),
-        redact: ['req.headers.authorization', 'req.headers.cookie'],
+        redact: [
+          'req.headers.authorization',
+          'req.headers.cookie',
+          'req.headers["x-signature"]',
+          'req.body.password',
+          'req.body.cardNumber',
+          'req.body.cvv',
+          'req.body.pin',
+          'req.body.otp',
+          'req.body.token',
+          'req.body.secret',
+          'req.body.app_secret',
+          'req.body.store_passwd',
+          'req.body.privateKey',
+          'req.body.sensitiveData',
+        ],
         transport:
           process.env.NODE_ENV === 'production'
             ? undefined
@@ -69,6 +86,8 @@ import { RedisModule } from './infra/redis/redis.module.js';
     CqrsModule,
     CoreModule,
     RedisModule,
+    RateLimitModule,
+    StorageModule,
     QueueModule,
     AuditModule,
     IamModule,

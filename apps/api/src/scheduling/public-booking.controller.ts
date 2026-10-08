@@ -1,4 +1,4 @@
-import { Body, Controller, Get, NotFoundException, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Get, NotFoundException, Param, Post, Query, UseGuards } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   type AvailabilityQuery,
@@ -11,6 +11,8 @@ import { Service, type ServiceDocument } from '../catalog/schemas/service.schema
 import { RequestContextService } from '../common/context/request-context.service.js';
 import { serializeName } from '../common/embeds.js';
 import { ZodValidationPipe } from '../common/pipes/zod-validation.pipe.js';
+import { RateLimit } from '../common/rate-limit/rate-limit.decorator.js';
+import { RateLimitGuard } from '../common/rate-limit/rate-limit.guard.js';
 import { Public } from '../iam/auth/public.decorator.js';
 import { Branch, type BranchDocument } from '../iam/schemas/branch.schema.js';
 import { Membership, type MembershipDocument } from '../iam/schemas/membership.schema.js';
@@ -23,6 +25,8 @@ import { serializeAppointment } from './mappers.js';
 // Unauthenticated per-tenant booking surface (the public `booking` app). Tenant is
 // resolved by slug; the request context is set manually (no JWT here).
 @Public()
+@UseGuards(RateLimitGuard)
+@RateLimit({ points: 60, durationSeconds: 60, keyPrefix: 'public-booking' })
 @Controller('public')
 export class PublicBookingController {
   constructor(
@@ -86,6 +90,7 @@ export class PublicBookingController {
   }
 
   @Post(':slug/:branchId/appointments')
+  @RateLimit({ points: 10, durationSeconds: 60, keyPrefix: 'public-booking-create' })
   async book(
     @Param('slug') slug: string,
     @Param('branchId') branchId: string,

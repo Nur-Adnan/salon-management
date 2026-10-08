@@ -8,6 +8,8 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
+import { RateLimit } from '../common/rate-limit/rate-limit.decorator.js';
+import { RateLimitGuard } from '../common/rate-limit/rate-limit.guard.js';
 import { Public } from '../iam/auth/public.decorator.js';
 import { ClientAuthGuard, type ClientJwtPayload } from './client-auth.guard.js';
 import { ClientPortalService } from './client-portal.service.js';
@@ -17,6 +19,8 @@ export class ClientPortalController {
   constructor(private readonly portal: ClientPortalService) {}
 
   @Public()
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ points: 5, durationSeconds: 300, keyPrefix: 'portal-otp-req' })
   @Post('auth/request-otp')
   async requestOtp(
     @Param('slug') slug: string,
@@ -26,6 +30,8 @@ export class ClientPortalController {
   }
 
   @Public()
+  @UseGuards(RateLimitGuard)
+  @RateLimit({ points: 10, durationSeconds: 300, keyPrefix: 'portal-otp-ver' })
   @Post('auth/verify-otp')
   async verifyOtp(
     @Param('slug') slug: string,

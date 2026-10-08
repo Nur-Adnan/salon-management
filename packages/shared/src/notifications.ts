@@ -160,6 +160,14 @@ export function renderNotificationTemplate(
       };
     }
 
+    case 'subscription_renewed': {
+      const d = data as SubscriptionNotificationData;
+      return {
+        subject: `Subscription Renewed: ${d.planName}`,
+        body: `Hi ${d.customerName}, your ${d.planName} subscription renewal succeeded on ${d.renewalDateFormatted || 'today'}.`,
+      };
+    }
+
     case 'subscription_renewal_failed': {
       const d = data as SubscriptionNotificationData;
       return {
@@ -168,11 +176,20 @@ export function renderNotificationTemplate(
       };
     }
 
-    case 'subscription_expired': {
+    case 'subscription_payment_failed': {
+      const d = data as SubscriptionNotificationData;
+      return {
+        subject: `Action Required: Subscription Payment Failed`,
+        body: `Hi ${d.customerName}, we could not process the payment for your ${d.planName} plan. Please update your billing details.`,
+      };
+    }
+
+    case 'subscription_expired':
+    case 'subscription_cancelled_payment_failure': {
       const d = data as SubscriptionNotificationData;
       return {
         subject: `Subscription Expired: ${d.planName}`,
-        body: `Hi ${d.customerName}, your subscription for ${d.planName} has expired. Reactivate anytime to continue enjoying your perks.`,
+        body: `Hi ${d.customerName}, your subscription for ${d.planName} has ended. Reactivate anytime to continue enjoying your perks.`,
       };
     }
 

@@ -24,4 +24,22 @@ export class HealthController {
       () => this.redis.isHealthy('redis'),
     ]);
   }
+
+  @Get('live')
+  live() {
+    return {
+      status: 'ok',
+      uptimeSeconds: Math.floor(process.uptime()),
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  @Get('ready')
+  @HealthCheck()
+  ready() {
+    return this.health.check([
+      () => this.mongoose.pingCheck('mongodb'),
+      () => this.redis.isHealthy('redis'),
+    ]);
+  }
 }
