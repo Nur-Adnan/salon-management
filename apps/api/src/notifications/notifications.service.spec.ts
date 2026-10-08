@@ -1,9 +1,6 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest';
 import { Types } from 'mongoose';
 import { NotificationsService } from './notifications.service.js';
-import { EmailProvider } from './providers/email.provider.js';
-import { SmsProvider } from './providers/sms.provider.js';
-import { WhatsAppProvider } from './providers/whatsapp.provider.js';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;

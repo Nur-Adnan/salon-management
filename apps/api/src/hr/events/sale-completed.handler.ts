@@ -61,7 +61,7 @@ export class HrSaleCompletedHandler implements IEventHandler<SaleCompleted> {
         netByStaff.set(key, (netByStaff.get(key) ?? 0) + net);
       }
 
-      for (const [staffIdStr, net] of netByStaff) {
+      for (const [staffIdStr, _net] of netByStaff) {
         const staffId = new Types.ObjectId(staffIdStr);
         const comp = await this.compensation.findOne({ tenantId, userId: staffId }).exec();
         const defaultRateBps = comp?.commissionRateBps ?? 0;

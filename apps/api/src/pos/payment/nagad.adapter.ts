@@ -67,7 +67,7 @@ export class NagadAdapter {
     orderId: string,
     amountMinor: number,
   ): Promise<NagadInitResponse> {
-    const amount = (amountMinor / 100).toFixed(2);
+    const _amount = (amountMinor / 100).toFixed(2);
 
     if (!this.isConfigured()) {
       const paymentReferenceId = `NAGAD_REF_${randomUUID().replace(/-/g, '').slice(0, 16)}`;

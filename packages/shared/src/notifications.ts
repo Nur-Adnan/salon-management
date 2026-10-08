@@ -89,13 +89,27 @@ export interface GiftCardNotificationData {
   expiryDateFormatted: string;
 }
 
+export interface CampaignBroadcastData {
+  subject?: string;
+  message?: string;
+  body?: string;
+  [key: string]: unknown;
+}
+
+export type NotificationPayloadData =
+  | AppointmentNotificationData
+  | SubscriptionNotificationData
+  | GiftCardNotificationData
+  | CampaignBroadcastData
+  | Record<string, unknown>;
+
 /**
  * Pure template renderers for standard notifications across channels.
  */
 export function renderNotificationTemplate(
   template: NotificationTemplate,
   channel: NotificationChannel,
-  data: Record<string, any>,
+  data: NotificationPayloadData,
 ): { subject?: string; body: string } {
   switch (template) {
     case 'appointment_reminder_24h': {
@@ -203,9 +217,10 @@ export function renderNotificationTemplate(
 
     case 'campaign_broadcast':
     default: {
+      const d = data as CampaignBroadcastData;
       return {
-        subject: data.subject ?? 'Special Offer from Salon',
-        body: data.message ?? data.body ?? '',
+        subject: String(d.subject ?? 'Special Offer from Salon'),
+        body: String(d.message ?? d.body ?? ''),
       };
     }
   }

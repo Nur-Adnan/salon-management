@@ -71,7 +71,7 @@ describe('Phase 12 Real-Time Data Sync', () => {
     });
 
     it('rejects cross-tenant room join attempt (tenant isolation)', async () => {
-      const tenantId = new Types.ObjectId();
+      const _tenantId = new Types.ObjectId();
       const otherTenantId = new Types.ObjectId();
       const branchId = new Types.ObjectId();
       const userId = new Types.ObjectId();

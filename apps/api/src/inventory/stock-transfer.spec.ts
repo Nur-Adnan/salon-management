@@ -5,7 +5,7 @@ import { InventoryService } from './inventory.service.js';
 describe('InventoryService (Stage B Refinements)', () => {
   const tenantId = new Types.ObjectId();
   const fromBranchId = new Types.ObjectId();
-  const toBranchId = new Types.ObjectId();
+  const _toBranchId = new Types.ObjectId();
   const productId = new Types.ObjectId();
 
   const mockContext = {

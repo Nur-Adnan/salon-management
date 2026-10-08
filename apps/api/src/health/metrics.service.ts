@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 
-interface RequestMetric {
+export interface RequestMetric {
   method: string;
   route: string;
   statusCode: number;

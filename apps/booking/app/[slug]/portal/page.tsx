@@ -30,6 +30,18 @@ interface AppointmentItem {
   depositAmount: { amount: number };
 }
 
+interface GiftCardItem {
+  _id: string;
+  code: string;
+  balance: { amount: number; currency: string };
+}
+
+interface LoyaltyState {
+  points: number;
+  tier: string;
+  history: Array<Record<string, unknown>>;
+}
+
 export default function ClientPortalPage() {
   const slug = String(useParams().slug ?? '');
   const [salon, setSalon] = useState<{ name: string } | null>(null);
@@ -47,8 +59,8 @@ export default function ClientPortalPage() {
   const [profile, setProfile] = useState<CustomerProfile | null>(null);
   const [upcoming, setUpcoming] = useState<AppointmentItem[]>([]);
   const [past, setPast] = useState<AppointmentItem[]>([]);
-  const [loyalty, setLoyalty] = useState<{ points: number; tier: string; history: any[] } | null>(null);
-  const [giftCards, setGiftCards] = useState<any[]>([]);
+  const [loyalty, setLoyalty] = useState<LoyaltyState | null>(null);
+  const [giftCards, setGiftCards] = useState<GiftCardItem[]>([]);
   const [feedback, setFeedback] = useState<string | null>(null);
 
   // Profile Edit
@@ -128,8 +140,8 @@ export default function ClientPortalPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to send OTP');
       setStep('otp');
-    } catch (err: any) {
-      setAuthError(err.message);
+    } catch (err: unknown) {
+      setAuthError((err as Error).message);
     } finally {
       setLoading(false);
     }
@@ -151,8 +163,8 @@ export default function ClientPortalPage() {
       setToken(data.token);
       localStorage.setItem(`client_token_${slug}`, data.token);
       setStep('portal');
-    } catch (err: any) {
-      setAuthError(err.message);
+    } catch (err: unknown) {
+      setAuthError((err as Error).message);
     } finally {
       setLoading(false);
     }
@@ -170,8 +182,8 @@ export default function ClientPortalPage() {
       if (!res.ok) throw new Error(data.message || 'Failed to cancel');
       setFeedback('Appointment cancelled successfully.');
       loadPortalData();
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      alert((err as Error).message);
     }
   };
 
@@ -192,8 +204,8 @@ export default function ClientPortalPage() {
         setFeedback('Profile updated successfully.');
         loadPortalData();
       }
-    } catch (err: any) {
-      alert(err.message);
+    } catch (err: unknown) {
+      alert((err as Error).message);
     }
   };
 
@@ -430,7 +442,7 @@ export default function ClientPortalPage() {
                 {giftCards.length === 0 ? (
                   <p className="text-xs text-default-400">No active gift cards.</p>
                 ) : (
-                  giftCards.map((g: any) => (
+                  giftCards.map((g: GiftCardItem) => (
                     <div key={g._id} className="rounded-medium border border-default-200 p-3 bg-content1 text-xs">
                       <p className="font-bold">{g.code}</p>
                       <p className="text-default-500">Balance: ৳{(g.balance.amount / 100).toFixed(0)}</p>

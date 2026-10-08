@@ -1,6 +1,6 @@
 import { BadRequestException, ConflictException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectConnection, InjectModel } from '@nestjs/mongoose';
-import { calculateShiftHoursWithBreaks, type PayrollAdjustment, payrollTotals, shiftHours } from '@salon/shared';
+import { calculateShiftHoursWithBreaks, type PayrollAdjustment, payrollTotals } from '@salon/shared';
 import { type Connection, type Model, Types } from 'mongoose';
 import { RequestContextService } from '../common/context/request-context.service.js';
 import { isDuplicateKeyError } from '../common/mongo.util.js';

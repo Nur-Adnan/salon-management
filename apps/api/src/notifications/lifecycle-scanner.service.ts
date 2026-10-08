@@ -2,7 +2,7 @@ import { InjectQueue } from '@nestjs/bullmq';
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import type { Queue } from 'bullmq';
-import { type Model, Types } from 'mongoose';
+import type { Model } from 'mongoose';
 import { CustomerSubscription, type CustomerSubscriptionDocument } from '../crm/schemas/customer-subscription.schema.js';
 import { GiftCard, type GiftCardDocument } from '../crm/schemas/gift-card.schema.js';
 import { REMINDER_QUEUE } from '../queue/queue.constants.js';

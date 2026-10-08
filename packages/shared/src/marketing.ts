@@ -1,4 +1,3 @@
-import type { CampaignChannel, CampaignStatus } from './enums.js';
 
 export interface CustomerSegmentFilter {
   minTotalSpendMinor?: number; // In minor units (poisha)
@@ -115,7 +114,7 @@ export function renderCampaignMessage(
   template: string,
   data: CampaignMessageData,
 ): string {
-  let rendered = template
+  const rendered = template
     .replace(/\{\{customerName\}\}/g, data.customerName)
     .replace(/\{\{campaignName\}\}/g, data.campaignName)
     .replace(/\{\{couponCode\}\}/g, data.couponCode ?? '')

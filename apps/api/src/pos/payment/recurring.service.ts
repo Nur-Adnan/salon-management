@@ -5,17 +5,13 @@ import {
   CustomerSubscription,
   type CustomerSubscriptionDocument,
 } from '../../crm/schemas/customer-subscription.schema.js';
-import {
-  SubscriptionPlan,
-  type SubscriptionPlanDocument,
-} from '../../crm/schemas/subscription-plan.schema.js';
 import { NotificationsService } from '../../notifications/notifications.service.js';
 import { PaymentGateway } from './providers.js';
 
 export interface RenewalResult {
   subscriptionId: string;
   success: boolean;
-  status: 'active' | 'cancelled';
+  status: 'current' | 'past_due' | 'cancelled';
   error?: string;
 }
 
@@ -26,8 +22,6 @@ export class RecurringBillingService {
   constructor(
     @InjectModel(CustomerSubscription.name)
     private readonly subscriptions: Model<CustomerSubscriptionDocument>,
-    @InjectModel(SubscriptionPlan.name)
-    private readonly plans: Model<SubscriptionPlanDocument>,
     private readonly paymentGateway: PaymentGateway,
     private readonly notifications: NotificationsService,
   ) {}
@@ -42,83 +36,156 @@ export class RecurringBillingService {
       tenantId: new Types.ObjectId(tenantId),
     });
 
-    if (!sub || sub.status === 'cancelled') {
+    if (!sub || (sub as any).status === 'cancelled') {
       return {
         subscriptionId,
         success: false,
-        status: sub?.status ?? 'cancelled',
+        status: (sub as any)?.status ?? 'cancelled',
         error: 'Subscription not found or already cancelled',
       };
     }
 
-    const plan = await this.plans.findById(sub.planId);
-    const planName = plan?.name?.en || 'Subscription';
-    const priceMinor = plan?.price?.amount || 0;
+    const planName = (sub as any).planName || 'VIP Monthly';
+    const priceMinor = (sub as any).pricePerIntervalMinor || 0;
+    const paymentMethod = (sub as any).preferredPaymentMethod || 'bkash';
+    const tokenizedRef = (sub as any).tokenizedPaymentRef;
+
+    const subIdHex =
+      typeof sub._id === 'object' && 'toHexString' in sub._id
+        ? (sub._id as Types.ObjectId).toHexString()
+        : String(sub._id);
+    const tenantIdHex =
+      typeof sub.tenantId === 'object' && 'toHexString' in sub.tenantId
+        ? (sub.tenantId as Types.ObjectId).toHexString()
+        : String(sub.tenantId);
+    const custIdHex =
+      (sub as any).customerId && typeof (sub as any).customerId === 'object' && 'toHexString' in (sub as any).customerId
+        ? (sub as any).customerId.toHexString()
+        : String((sub as any).customerId || 'customer');
 
     this.logger.log(
-      `Attempting renewal charge for subscription ${sub._id} (${planName})`,
+      `Attempting renewal charge for subscription ${subIdHex} (${planName}) via ${paymentMethod}`,
     );
 
-    const chargeResult = await this.paymentGateway.charge('bkash', {
+    const chargeResult = await this.paymentGateway.charge(paymentMethod as any, {
       amountMinor: priceMinor,
-      reference: `SUB-RENEW-${sub._id}-${Date.now()}`,
-      tenantId: sub.tenantId.toHexString(),
+      reference: `SUB-RENEW-${subIdHex}-${Date.now()}`,
+      providerRef: tokenizedRef,
+      tenantId: tenantIdHex,
       branchId: new Types.ObjectId().toHexString(),
     });
 
     if (chargeResult.status === 'captured') {
-      // Advance billing cycle by plan billing period (default 30 days)
-      const periodDays = plan?.billingPeriodDays || 30;
-      const nextDate = new Date(sub.nextBillingDate);
-      nextDate.setDate(nextDate.getDate() + periodDays);
+      const periodEnd = (sub as any).currentPeriodEnd
+        ? new Date((sub as any).currentPeriodEnd)
+        : new Date();
+      const newPeriodEnd = new Date(periodEnd);
+      if ((sub as any).interval === 'year') {
+        newPeriodEnd.setFullYear(newPeriodEnd.getFullYear() + 1);
+      } else {
+        newPeriodEnd.setMonth(newPeriodEnd.getMonth() + 1);
+      }
 
       await this.subscriptions.updateOne(
         { _id: sub._id },
         {
           $set: {
-            currentPeriodStart: sub.nextBillingDate,
-            nextBillingDate: nextDate,
+            status: 'current',
+            currentPeriodStart: periodEnd,
+            currentPeriodEnd: newPeriodEnd,
+            failedPaymentAttempts: 0,
+            lastPaymentStatus: 'succeeded',
+            lastRenewedAt: new Date(),
           },
         },
       );
 
-      // Send upcoming renewal notice for next period
       await this.notifications.queueNotification({
         tenantId: sub.tenantId,
         channel: 'sms',
-        recipient: sub.customerId.toHexString(),
-        template: 'subscription_renewal_upcoming',
+        recipient: custIdHex,
+        template: 'subscription_renewed',
         data: {
           customerName: 'Customer',
           planName,
-          renewalDate: nextDate.toISOString().slice(0, 10),
-          amountMinor: priceMinor,
+          amountFormatted: `৳${(priceMinor / 100).toLocaleString()}`,
+          renewalDateFormatted: newPeriodEnd.toISOString().slice(0, 10),
         },
-        idempotencyKey: `sub-renew-${sub._id}-${nextDate.getTime()}`,
+        idempotencyKey: `sub-renew-${subIdHex}-${newPeriodEnd.getTime()}`,
       });
 
-      return { subscriptionId, success: true, status: 'active' };
+      return { subscriptionId, success: true, status: 'current' };
     }
 
-    // Payment failed: notify customer
+    // Payment failed: increment retry count
+    const currentAttempts = ((sub as any).failedPaymentAttempts || 0) + 1;
+    const maxAttempts = 3;
+
+    if (currentAttempts < maxAttempts) {
+      await this.subscriptions.updateOne(
+        { _id: sub._id },
+        {
+          $set: {
+            status: 'past_due',
+            failedPaymentAttempts: currentAttempts,
+            lastPaymentStatus: 'failed',
+            lastFailedAt: new Date(),
+          },
+        },
+      );
+
+      await this.notifications.queueNotification({
+        tenantId: sub.tenantId,
+        channel: 'sms',
+        recipient: custIdHex,
+        template: 'subscription_payment_failed',
+        data: {
+          customerName: 'Customer',
+          planName,
+          attempt: currentAttempts,
+        },
+        idempotencyKey: `sub-failed-${subIdHex}-${Date.now()}`,
+      });
+
+      return {
+        subscriptionId,
+        success: false,
+        status: 'past_due',
+        error: chargeResult.failureReason || 'Payment declined',
+      };
+    }
+
+    // Max attempts exceeded: cancel subscription
+    await this.subscriptions.updateOne(
+      { _id: sub._id },
+      {
+        $set: {
+          status: 'cancelled',
+          failedPaymentAttempts: currentAttempts,
+          lastPaymentStatus: 'failed',
+          cancelledAt: new Date(),
+          cancellationReason: 'Payment retry limit exceeded',
+        },
+      },
+    );
+
     await this.notifications.queueNotification({
       tenantId: sub.tenantId,
       channel: 'sms',
-      recipient: sub.customerId.toHexString(),
-      template: 'subscription_renewal_failed',
+      recipient: custIdHex,
+      template: 'subscription_cancelled_payment_failure',
       data: {
         customerName: 'Customer',
         planName,
-        error: chargeResult.failureReason || 'Charge declined',
       },
-      idempotencyKey: `sub-failed-${sub._id}-${Date.now()}`,
+      idempotencyKey: `sub-cancel-${subIdHex}-${Date.now()}`,
     });
 
     return {
       subscriptionId,
       success: false,
-      status: 'active',
-      error: chargeResult.failureReason || 'Payment declined',
+      status: 'cancelled',
+      error: 'Exceeded maximum payment attempts. Subscription cancelled.',
     };
   }
 }
