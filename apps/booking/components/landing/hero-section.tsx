@@ -6,7 +6,7 @@ import { ArrowRight, ShieldCheck, Sparkles, Clock, MapPin, Zap } from 'lucide-re
 
 export function HeroSection() {
   return (
-    <section className="relative overflow-hidden border-b border-white/[0.08] pt-12 pb-24 md:pt-20 md:pb-32">
+    <section id="hero" className="relative overflow-hidden border-b border-white/[0.08] pt-12 pb-24 md:pt-20 md:pb-32">
       {/* Ambient background luminescence */}
       <div className="ambient-glow -top-32 left-1/2 h-[450px] w-[700px] -translate-x-1/2 bg-[#d4a373]" />
       <div className="ambient-glow top-40 right-10 h-[350px] w-[450px] bg-[#9e2a2b]" />
@@ -19,10 +19,10 @@ export function HeroSection() {
           transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
           className="flex items-center gap-3"
         >
-          <div className="inline-flex items-center gap-2 border border-[#d4a373]/30 bg-[#161920]/80 px-3.5 py-1.5 backdrop-blur-md">
-            <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-[#d4a373]" />
-            <span className="text-[11px] font-medium tracking-[0.2em] uppercase text-[#faedcd]">
-              Aura OS · Enterprise Wellness Architecture
+          <div className="inline-flex max-w-full flex-wrap items-center gap-2 border border-[#d4a373]/30 bg-[#161920]/80 px-3 py-1.5 backdrop-blur-md">
+            <span className="h-1.5 w-1.5 shrink-0 animate-pulse rounded-full bg-[#d4a373]" />
+            <span className="text-[10px] font-medium tracking-wider uppercase text-[#faedcd]">
+              Aura OS · Enterprise Wellness
             </span>
           </div>
 

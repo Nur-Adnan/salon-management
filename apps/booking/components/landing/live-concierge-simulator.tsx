@@ -81,9 +81,9 @@ export function LiveConciergeSimulator() {
     { id: 'any', name: 'First Available Master Artisan', title: 'Optimal Earliest Schedule', rating: '5.00' },
   ];
 
-  const [selectedBranch, setSelectedBranch] = useState(branches[0]);
-  const [selectedRitual, setSelectedRitual] = useState(rituals[0]);
-  const [selectedArtisan, setSelectedArtisan] = useState(artisans[0]);
+  const [selectedBranch, setSelectedBranch] = useState<SanctuaryBranch>(branches[0]!);
+  const [selectedRitual, setSelectedRitual] = useState<RitualService>(rituals[0]!);
+  const [selectedArtisan, setSelectedArtisan] = useState<Artisan>(artisans[0]!);
 
   const bdt = (poisha: number) => `৳${(poisha / 100).toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
   const vatAmount = selectedRitual.priceMinor * 0.15;

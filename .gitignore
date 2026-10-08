@@ -11,6 +11,8 @@ out/
 
 # test / coverage
 coverage/
+playwright-report/
+test-results/
 
 # env / secrets (NEVER commit) - see .env.example
 .env

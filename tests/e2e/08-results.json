@@ -1,0 +1,101 @@
+[
+  {
+    "suite": "Landing Page UI & Composition",
+    "name": "Hero Editorial Layout & Kinetic Core",
+    "status": "PASS",
+    "details": "Verified Playfair Display serif editorial typography, ambient luminescence, and live telemetry badges.",
+    "durationMs": 927,
+    "consoleErrors": [],
+    "screenshotPath": "08_landing_hero_desktop_1440px.png"
+  },
+  {
+    "suite": "Interactive Creative Feature",
+    "name": "Live Treatment Concierge Simulator",
+    "status": "PASS",
+    "details": "Interactive branch, ritual, and artisan switching verified with instant reactive BDT pricing & VAT recalculation.",
+    "durationMs": 1647,
+    "consoleErrors": [],
+    "screenshotPath": "08_landing_interactive_concierge.png"
+  },
+  {
+    "suite": "Design Language & Aesthetics",
+    "name": "Six Architectural System Pillars",
+    "status": "PASS",
+    "details": "All 6 architectural pillars loaded with sharp geometry, technical guarantees, and custom iconography (6/6).",
+    "durationMs": 585,
+    "consoleErrors": [],
+    "screenshotPath": "08_landing_architectural_pillars.png"
+  },
+  {
+    "suite": "Technical Motion & Visualization",
+    "name": "5-Stage Transaction Pipeline Diagram",
+    "status": "PASS",
+    "details": "Interactive pipeline tabs switch seamlessly showing latency benchmarks and distributed guarantees.",
+    "durationMs": 1006,
+    "consoleErrors": [],
+    "screenshotPath": "08_landing_pipeline_stage3.png"
+  },
+  {
+    "suite": "UI Micro-Interactions",
+    "name": "Spring FAQ Accordion Expansion",
+    "status": "PASS",
+    "details": "Accordion expands smoothly with Framer Motion spring physics and clean accessible focus states.",
+    "durationMs": 1001,
+    "consoleErrors": [],
+    "screenshotPath": "08_landing_faq_expanded.png"
+  },
+  {
+    "suite": "Responsive Design & Adaptability",
+    "name": "Viewport Adaptability Mobile_320px (320x568)",
+    "status": "PASS",
+    "details": "Clean responsive wrapping with 0px horizontal overflow at 320px.",
+    "durationMs": 0,
+    "consoleErrors": [],
+    "screenshotPath": "08_landing_Mobile_320px.png"
+  },
+  {
+    "suite": "Responsive Design & Adaptability",
+    "name": "Viewport Adaptability Mobile_375px (375x667)",
+    "status": "PASS",
+    "details": "Clean responsive wrapping with 0px horizontal overflow at 375px.",
+    "durationMs": 0,
+    "consoleErrors": [],
+    "screenshotPath": "08_landing_Mobile_375px.png"
+  },
+  {
+    "suite": "Responsive Design & Adaptability",
+    "name": "Viewport Adaptability Mobile_390px (390x844)",
+    "status": "PASS",
+    "details": "Clean responsive wrapping with 0px horizontal overflow at 390px.",
+    "durationMs": 0,
+    "consoleErrors": [],
+    "screenshotPath": "08_landing_Mobile_390px.png"
+  },
+  {
+    "suite": "Responsive Design & Adaptability",
+    "name": "Viewport Adaptability Tablet_768px (768x1024)",
+    "status": "PASS",
+    "details": "Clean responsive wrapping with 0px horizontal overflow at 768px.",
+    "durationMs": 0,
+    "consoleErrors": [],
+    "screenshotPath": "08_landing_Tablet_768px.png"
+  },
+  {
+    "suite": "Responsive Design & Adaptability",
+    "name": "Viewport Adaptability Laptop_1024px (1024x768)",
+    "status": "PASS",
+    "details": "Clean responsive wrapping with 0px horizontal overflow at 1024px.",
+    "durationMs": 0,
+    "consoleErrors": [],
+    "screenshotPath": "08_landing_Laptop_1024px.png"
+  },
+  {
+    "suite": "Responsive Design & Adaptability",
+    "name": "Viewport Adaptability UltraWide_1920px (1920x1080)",
+    "status": "PASS",
+    "details": "Clean responsive wrapping with 0px horizontal overflow at 1920px.",
+    "durationMs": 0,
+    "consoleErrors": [],
+    "screenshotPath": "08_landing_UltraWide_1920px.png"
+  }
+]
