@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@21st-dev/cli':
+        specifier: ^1.18.0
+        version: 1.18.0
       '@playwright/test':
         specifier: ^1.64.0
         version: 1.64.0
@@ -321,6 +324,11 @@ importers:
         version: 6.0.3
 
 packages:
+
+  '@21st-dev/cli@1.18.0':
+    resolution: {integrity: sha512-rV8X5asUb0Qyvyc2ZD+itxL/u6VgyovuPIVc7wwBrvSNfdsWXxNGcYqfhrA4PMJ+/CqWVhm1jEl5/w36N91JWw==}
+    engines: {node: '>=18'}
+    hasBin: true
 
   '@adobe/react-spectrum-ui@1.2.1':
     resolution: {integrity: sha512-wcrbEE2O/9WnEn6avBnaVRRx88S5PLFsPLr4wffzlbMfXeQsy+RMQwaJd3cbzrn18/j04Isit7f7Emfn0dhrJA==}
@@ -3498,6 +3506,8 @@ packages:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
 snapshots:
+
+  '@21st-dev/cli@1.18.0': {}
 
   '@adobe/react-spectrum-ui@1.2.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)':
     dependencies:

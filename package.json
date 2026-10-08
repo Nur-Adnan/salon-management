@@ -22,6 +22,7 @@
     "infra:down": "docker compose down"
   },
   "devDependencies": {
+    "@21st-dev/cli": "^1.18.0",
     "@playwright/test": "^1.64.0",
     "eslint": "10.6.0",
     "playwright": "^1.64.0",

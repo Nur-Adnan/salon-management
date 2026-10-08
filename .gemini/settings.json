@@ -1,0 +1,30 @@
+{
+  "$schema": "https://antigravity.google/schemas/mcp_config.json",
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp@latest", "--headless"]
+    },
+    "chrome-devtools": {
+      "command": "npx",
+      "args": ["-y", "chrome-devtools-mcp@latest"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp@latest"]
+    },
+    "figma": {
+      "serverUrl": "https://mcp.figma.com/mcp"
+    },
+    "github": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"]
+    },
+    "vercel": {
+      "serverUrl": "https://mcp.vercel.com"
+    },
+    "twentyfirst": {
+      "serverUrl": "https://21st.dev/api/mcp"
+    }
+  }
+}
