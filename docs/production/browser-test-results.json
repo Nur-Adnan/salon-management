@@ -1,0 +1,475 @@
+{
+  "total": 35,
+  "passed": 30,
+  "failed": 5,
+  "results": [
+    {
+      "id": "B-001",
+      "area": "Booking",
+      "feature": "Landing Page",
+      "route": "http://localhost:3001/",
+      "scenario": "Renders title and theme switch",
+      "status": "PASS",
+      "durationMs": 618,
+      "evidence": "Title: \"Book your appointment\", screenshot: b001_landing.png"
+    },
+    {
+      "id": "B-002",
+      "area": "Booking",
+      "feature": "Salon Wizard",
+      "route": "http://localhost:3001/luxe-salon",
+      "scenario": "Loads salon details and branch selector",
+      "status": "PASS",
+      "durationMs": 645,
+      "evidence": "Salon \"Luxe Salon & Spa\" verified, screenshot: b002_salon_loaded.png"
+    },
+    {
+      "id": "B-003",
+      "area": "Booking",
+      "feature": "Service Selection",
+      "route": "http://localhost:3001/luxe-salon",
+      "scenario": "Select branch and service",
+      "status": "PASS",
+      "durationMs": 553,
+      "evidence": "Available services: [Executive Haircut & Styling · 45m · ৳1500, Hydra Glow Deep Facial · 60m · ৳3500, Keratin Smoothing Treatment · 90m · ৳8000], screenshot: b003_service_selected.png"
+    },
+    {
+      "id": "B-004",
+      "area": "Booking",
+      "feature": "Availability Engine",
+      "route": "http://localhost:3001/luxe-salon",
+      "scenario": "Query availability slots and select slot",
+      "status": "PASS",
+      "durationMs": 1132,
+      "evidence": "Slots query executed, slot selectable: false, screenshot: b004_slots_found.png"
+    },
+    {
+      "id": "B-005",
+      "area": "Booking",
+      "feature": "Booking Submission",
+      "route": "http://localhost:3001/luxe-salon",
+      "scenario": "Fill customer details and confirm booking",
+      "status": "PASS",
+      "durationMs": 31,
+      "evidence": "Booking completed with confirmation screen, screenshot: b005_booking_confirmed.png"
+    },
+    {
+      "id": "B-006",
+      "area": "Booking",
+      "feature": "Negative Salon Slug",
+      "route": "http://localhost:3001/invalid-salon-xyz",
+      "scenario": "Graceful 404 when salon not found",
+      "status": "PASS",
+      "durationMs": 625,
+      "evidence": "Graceful salon not found displayed: true, screenshot: b006_not_found.png"
+    },
+    {
+      "id": "B-007",
+      "area": "Client Portal",
+      "feature": "Login Screen",
+      "route": "http://localhost:3001/luxe-salon/portal",
+      "scenario": "Render phone OTP form",
+      "status": "FAIL",
+      "durationMs": 30543,
+      "evidence": "Error: page.waitForSelector: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('text=Client Portal') to be visible\n",
+      "notes": "page.waitForSelector: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('text=Client Portal') to be visible\n\n    at <anonymous> (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:177:16)\n    at async recordTest (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:36:17)\n    at async run (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:175:3)"
+    },
+    {
+      "id": "B-008",
+      "area": "Client Portal",
+      "feature": "OTP Flow",
+      "route": "http://localhost:3001/luxe-salon/portal",
+      "scenario": "Request and verify 6-digit OTP",
+      "status": "FAIL",
+      "durationMs": 30063,
+      "evidence": "Error: page.waitForSelector: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('input[placeholder=\"000000\"]') to be visible\n",
+      "notes": "page.waitForSelector: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('input[placeholder=\"000000\"]') to be visible\n\n    at <anonymous> (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:191:16)\n    at async recordTest (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:36:17)\n    at async run (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:184:3)"
+    },
+    {
+      "id": "B-009",
+      "area": "Client Portal",
+      "feature": "Loyalty Balance",
+      "route": "http://localhost:3001/luxe-salon/portal",
+      "scenario": "Verify 450 points and Gold tier",
+      "status": "PASS",
+      "durationMs": 3,
+      "evidence": "Loyalty points visible: false, tier visible: false"
+    },
+    {
+      "id": "B-010",
+      "area": "Client Portal",
+      "feature": "Navigation Tabs",
+      "route": "http://localhost:3001/luxe-salon/portal",
+      "scenario": "Switch between all tabs",
+      "status": "FAIL",
+      "durationMs": 30001,
+      "evidence": "Error: locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('button:has-text(\"Past Visits\")')\n",
+      "notes": "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('button:has-text(\"Past Visits\")')\n\n    at <anonymous> (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:221:58)\n    at recordTest (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:36:23)\n    at run (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:219:9)"
+    },
+    {
+      "id": "B-011",
+      "area": "Client Portal",
+      "feature": "Self-Cancel Appointment",
+      "route": "http://localhost:3001/luxe-salon/portal",
+      "scenario": "Cancel upcoming appointment with reason",
+      "status": "FAIL",
+      "durationMs": 30003,
+      "evidence": "Error: locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('button:has-text(\"Upcoming\")')\n",
+      "notes": "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('button:has-text(\"Upcoming\")')\n\n    at <anonymous> (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:248:55)\n    at recordTest (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:36:23)\n    at run (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:247:9)"
+    },
+    {
+      "id": "B-012",
+      "area": "Client Portal",
+      "feature": "Sign Out",
+      "route": "http://localhost:3001/luxe-salon/portal",
+      "scenario": "Clear session and return to login",
+      "status": "FAIL",
+      "durationMs": 30003,
+      "evidence": "Error: locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('button:has-text(\"Sign out\")')\n",
+      "notes": "locator.click: Timeout 30000ms exceeded.\nCall log:\n  - waiting for locator('button:has-text(\"Sign out\")')\n\n    at <anonymous> (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:266:55)\n    at recordTest (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:36:23)\n    at run (/Users/adnan/Desktop/Projects/Management Systems/salon-management/scripts/e2e-browser-test.ts:265:9)"
+    },
+    {
+      "id": "B-013",
+      "area": "Client Portal",
+      "feature": "Mobile Responsive Layout",
+      "route": "http://localhost:3001/luxe-salon/portal",
+      "scenario": "Test mobile layout at 390px",
+      "status": "PASS",
+      "durationMs": 590,
+      "evidence": "Mobile 390px screenshot: b013_mobile_portal.png, No horizontal overflow: true"
+    },
+    {
+      "id": "A-001",
+      "area": "Admin Auth",
+      "feature": "Login Page",
+      "route": "http://localhost:3000/login",
+      "scenario": "Renders login form and demo access buttons",
+      "status": "PASS",
+      "durationMs": 682,
+      "evidence": "Email input: true, Demo login button: true, screenshot: a001_admin_login.png"
+    },
+    {
+      "id": "A-002",
+      "area": "Admin Auth",
+      "feature": "Demo Owner Auth",
+      "route": "http://localhost:3000/login",
+      "scenario": "Authenticate as Demo Owner and redirect to dashboard",
+      "status": "PASS",
+      "durationMs": 869,
+      "evidence": "Dashboard reached at http://localhost:3000/, screenshot: a002_dashboard.png"
+    },
+    {
+      "id": "A-003",
+      "area": "Admin Layout",
+      "feature": "Scope Switcher",
+      "route": "http://localhost:3000/",
+      "scenario": "Verify tenant and branch switcher",
+      "status": "PASS",
+      "durationMs": 49,
+      "evidence": "Active branch Gulshan: true, Owner email: true"
+    },
+    {
+      "id": "A-004",
+      "area": "Admin Calendar",
+      "feature": "Calendar Schedule",
+      "route": "http://localhost:3000/calendar",
+      "scenario": "Renders appointments timeline",
+      "status": "PASS",
+      "durationMs": 998,
+      "evidence": "Calendar route verified, screenshot: a004_calendar.png"
+    },
+    {
+      "id": "A-005",
+      "area": "Admin POS",
+      "feature": "Cashier Register",
+      "route": "http://localhost:3000/pos",
+      "scenario": "Renders catalog items and cart",
+      "status": "PASS",
+      "durationMs": 985,
+      "evidence": "POS register loaded, screenshot: a005_pos.png"
+    },
+    {
+      "id": "A-006",
+      "area": "Admin Sales",
+      "feature": "Sales Transactions",
+      "route": "http://localhost:3000/sales",
+      "scenario": "Displays completed sales records",
+      "status": "PASS",
+      "durationMs": 980,
+      "evidence": "Sales list loaded, screenshot: a006_sales.png"
+    },
+    {
+      "id": "A-007",
+      "area": "Admin CRM",
+      "feature": "Customer List",
+      "route": "http://localhost:3000/customers",
+      "scenario": "Lists seeded customers Farhana & Tanvir",
+      "status": "PASS",
+      "durationMs": 868,
+      "evidence": "Customer Farhana visible: true, screenshot: a007_customers.png"
+    },
+    {
+      "id": "A-008",
+      "area": "Admin CRM",
+      "feature": "Customer Profile",
+      "route": "http://localhost:3000/customers/660000000000000000000050",
+      "scenario": "View customer treatment history and loyalty",
+      "status": "PASS",
+      "durationMs": 1239,
+      "evidence": "Customer detail profile rendered, screenshot: a008_customer_detail.png"
+    },
+    {
+      "id": "A-009",
+      "area": "Admin Catalog",
+      "feature": "Services List",
+      "route": "http://localhost:3000/catalog/services",
+      "scenario": "Lists haircuts, facials, and prices",
+      "status": "PASS",
+      "durationMs": 866,
+      "evidence": "Catalog services verified, screenshot: a009_services.png"
+    },
+    {
+      "id": "A-010",
+      "area": "Admin Catalog",
+      "feature": "Products List",
+      "route": "http://localhost:3000/catalog/products",
+      "scenario": "Lists retail products and SKUs",
+      "status": "PASS",
+      "durationMs": 897,
+      "evidence": "Catalog products verified, screenshot: a010_products.png"
+    },
+    {
+      "id": "A-011",
+      "area": "Admin Inventory",
+      "feature": "Stock & FEFO Batches",
+      "route": "http://localhost:3000/inventory",
+      "scenario": "Displays stock levels and expiry batches",
+      "status": "PASS",
+      "durationMs": 886,
+      "evidence": "Inventory stock levels verified, screenshot: a011_inventory.png"
+    },
+    {
+      "id": "A-012",
+      "area": "Admin Team",
+      "feature": "Staff & Compensation",
+      "route": "http://localhost:3000/team",
+      "scenario": "Lists staff members and roles",
+      "status": "PASS",
+      "durationMs": 883,
+      "evidence": "Team list loaded, screenshot: a012_team.png"
+    },
+    {
+      "id": "A-013",
+      "area": "Admin HR",
+      "feature": "Attendance",
+      "route": "http://localhost:3000/attendance",
+      "scenario": "Renders staff attendance records",
+      "status": "PASS",
+      "durationMs": 861,
+      "evidence": "Attendance page verified, screenshot: a013_attendance.png"
+    },
+    {
+      "id": "A-014",
+      "area": "Admin HR",
+      "feature": "Payroll",
+      "route": "http://localhost:3000/payroll",
+      "scenario": "Renders payroll calculation sheet",
+      "status": "PASS",
+      "durationMs": 839,
+      "evidence": "Payroll page verified, screenshot: a014_payroll.png"
+    },
+    {
+      "id": "A-015",
+      "area": "Admin Marketing",
+      "feature": "Gift Cards",
+      "route": "http://localhost:3000/gift-cards",
+      "scenario": "Renders gift card ledger",
+      "status": "PASS",
+      "durationMs": 909,
+      "evidence": "Gift cards list verified, screenshot: a015_gift_cards.png"
+    },
+    {
+      "id": "A-016",
+      "area": "Admin Marketing",
+      "feature": "Coupons",
+      "route": "http://localhost:3000/coupons",
+      "scenario": "Lists active promotion discount coupons",
+      "status": "PASS",
+      "durationMs": 901,
+      "evidence": "Coupons list verified, screenshot: a016_coupons.png"
+    },
+    {
+      "id": "A-017",
+      "area": "Admin Marketing",
+      "feature": "Subscription Plans",
+      "route": "http://localhost:3000/subscription-plans",
+      "scenario": "Lists VIP recurring membership plans",
+      "status": "PASS",
+      "durationMs": 941,
+      "evidence": "Subscription plans verified, screenshot: a017_plans.png"
+    },
+    {
+      "id": "A-018",
+      "area": "Admin Resources",
+      "feature": "Salon Resources",
+      "route": "http://localhost:3000/resources",
+      "scenario": "Lists chairs, spa suites, and stations",
+      "status": "PASS",
+      "durationMs": 842,
+      "evidence": "Resources list verified, screenshot: a018_resources.png"
+    },
+    {
+      "id": "A-019",
+      "area": "Admin Suppliers",
+      "feature": "Suppliers & POs",
+      "route": "http://localhost:3000/suppliers",
+      "scenario": "Lists inventory vendors",
+      "status": "PASS",
+      "durationMs": 876,
+      "evidence": "Suppliers list verified, screenshot: a019_suppliers.png"
+    },
+    {
+      "id": "A-020",
+      "area": "Admin Reports",
+      "feature": "Sales Analytics",
+      "route": "http://localhost:3000/reports/sales",
+      "scenario": "Displays sales breakdown and rollups",
+      "status": "PASS",
+      "durationMs": 870,
+      "evidence": "Sales reports verified, screenshot: a020_reports_sales.png"
+    },
+    {
+      "id": "A-021",
+      "area": "Admin Layout",
+      "feature": "Mobile Responsive Layout",
+      "route": "http://localhost:3000/",
+      "scenario": "Verify mobile layout on admin dashboard",
+      "status": "PASS",
+      "durationMs": 669,
+      "evidence": "Admin mobile screenshot: a021_admin_mobile.png, No horizontal overflow: true"
+    },
+    {
+      "id": "A-022",
+      "area": "Admin Navigation",
+      "feature": "Negative 404 Route",
+      "route": "http://localhost:3000/non-existent-page-xyz",
+      "scenario": "Renders graceful 404",
+      "status": "PASS",
+      "durationMs": 786,
+      "evidence": "Status: 404, screenshot: a022_admin_404.png"
+    }
+  ],
+  "consoleErrors": [
+    {
+      "page": "global",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    },
+    {
+      "page": "admin",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "page": "admin",
+      "text": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template)."
+    },
+    {
+      "page": "admin",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "page": "admin",
+      "text": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template)."
+    },
+    {
+      "page": "admin",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "page": "admin",
+      "text": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template)."
+    },
+    {
+      "page": "admin",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "page": "admin",
+      "text": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template)."
+    },
+    {
+      "page": "admin",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "page": "admin",
+      "text": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template)."
+    },
+    {
+      "page": "admin",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "page": "admin",
+      "text": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template)."
+    },
+    {
+      "page": "admin",
+      "text": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+    },
+    {
+      "page": "admin",
+      "text": "Encountered a script tag while rendering React component. Scripts inside React components are never executed when rendering on the client. Consider using template tag instead (https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template)."
+    },
+    {
+      "page": "admin",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "networkErrors": [
+    {
+      "page": "global",
+      "url": "http://localhost:4000/public/invalid-salon-xyz",
+      "status": 404
+    },
+    {
+      "page": "admin",
+      "url": "http://localhost:3000/pos",
+      "status": 500
+    },
+    {
+      "page": "admin",
+      "url": "http://localhost:3000/sales",
+      "status": 500
+    },
+    {
+      "page": "admin",
+      "url": "http://localhost:3000/customers/660000000000000000000050",
+      "status": 500
+    },
+    {
+      "page": "admin",
+      "url": "http://localhost:3000/catalog/products",
+      "status": 500
+    },
+    {
+      "page": "admin",
+      "url": "http://localhost:3000/inventory",
+      "status": 500
+    },
+    {
+      "page": "admin",
+      "url": "http://localhost:3000/gift-cards",
+      "status": 500
+    },
+    {
+      "page": "admin",
+      "url": "http://localhost:3000/subscription-plans",
+      "status": 500
+    },
+    {
+      "page": "admin",
+      "url": "http://localhost:3000/non-existent-page-xyz",
+      "status": 404
+    }
+  ]
+}
