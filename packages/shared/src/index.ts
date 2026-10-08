@@ -9,3 +9,4 @@ export * from './appointment-status.js';
 export * from './enums.js';
 export * from './schemas.js';
 export * from './notifications.js';
+export * from './marketing.js';

@@ -35,6 +35,13 @@ export class Customer {
   @Prop({ type: String, default: null })
   referralCode!: string | null;
 
+  // --- Phase 9: Marketing & Opt-Out ---
+  @Prop({ type: Boolean, default: false })
+  marketingOptOut!: boolean;
+
+  @Prop({ type: Date, default: null })
+  optOutAt!: Date | null;
+
   @Prop({ type: Date, default: null })
   deletedAt!: Date | null;
 }
